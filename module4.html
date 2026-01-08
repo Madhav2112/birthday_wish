@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Cosmic Birthday Module</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #050514;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* Layout */
+.container {
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  background:
+    radial-gradient(circle at 20% 0, rgba(140,70,255,0.25) 0, transparent 55%),
+    radial-gradient(circle at 80% 0, rgba(0,196,255,0.25) 0, transparent 55%);
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  text-shadow: 0 0 14px rgba(186,134,255,0.9);
+  transition: opacity 0.6s ease;
+}
+
+/* Box Area */
+.box-area {
+  position: relative;
+  width: 520px;
+  height: 220px;
+}
+
+.gift-box {
+  width: 140px;
+  height: 120px;
+  cursor: pointer;
+  position: absolute;
+  bottom: 20px;
+  transition: left 0.45s ease, bottom 0.45s ease;
+}
+
+.gift-box.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+#box1 { left: 0; }
+#box2 { left: 190px; }
+#box3 { left: 380px; }
+
+.base {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #3a1a6f, #1b0f3b);
+  border: 2px solid rgba(255,185,255,0.9);
+  box-shadow: inset 0 6px 12px rgba(0,0,0,0.45), 0 10px 18px rgba(0,0,0,0.7);
+}
+
+.base::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 20%; height: 100%;
+  background: linear-gradient(180deg, #ff9ad9, #ffc5f0);
+}
+
+.base::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 0;
+  transform: translateY(-50%);
+  width: 100%; height: 15%;
+  background: linear-gradient(90deg, #ff9ad9, #ffd4ff);
+}
+
+.lid {
+  position: absolute;
+  top: -26px; left: -4px;
+  width: calc(100% + 8px);
+  height: 32px;
+  border-radius: 18px 18px 10px 10px;
+  background: linear-gradient(135deg, #f4d6ff, #7f5dff);
+  border: 2px solid rgba(255,210,255,1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+  transition: transform 0.6s ease;
+  z-index: 10;
+}
+
+.orb-ball {
+  font-size: 2.4rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: transform 0.6s ease, opacity 0.4s ease;
+  filter: drop-shadow(0 0 12px rgba(255,150,255,0.9));
+  z-index: 1;
+  pointer-events: none;
+}
+/* Cake */
+.cake {
+  position: fixed;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  transition: all 0.6s ease;
+  pointer-events: none;
+  z-index: 999;
+  filter: drop-shadow(0 0 20px rgba(255, 80, 255, 0.45))
+          drop-shadow(0 0 35px rgba(255, 120, 220, 0.35));
+}
+
+.cake-layer {
+  position: relative;
+  overflow: visible;
+  height: 55px;
+  border-radius: 20px;
+  margin: 0 auto;
+  background: #6a2b9b;
+  box-shadow:
+    inset 0 4px 10px rgba(255,255,255,0.08),
+    inset 0 -6px 12px rgba(0,0,0,0.45),
+    0 8px 22px rgba(0,0,0,0.55);
+  z-index: 2;
+}
+
+.cake-layer.bottom { width: 240px; }
+.cake-layer.middle { width: 220px; margin-top: -14px; }
+.cake-layer.top    { width: 200px; margin-top: -14px; }
+
+/* Thinner cream */
+.cake-layer::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  background: #ff4fd8;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 0 12px #ff4fd8;
+  z-index: 1;
+}
+/* Thin elegant drips */
+.drip {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  background: #ff4fd8;
+  border-radius: 0 0 40% 40%;
+  box-shadow:
+    0 0 6px #ff4fd8,
+    inset 0 -2px 4px rgba(0,0,0,0.25);
+  z-index: 3;
+}
+
+/* TOP LAYER — 2 drips */
+.d1 { left: 05px; height: 23px; }
+.d2 { left: 120px; height: 22px; }
+
+/* MIDDLE LAYER — 2 drips */
+.d3 { left: 50px; height: 24px; }
+.d4 { left: 135px; height: 20px; }
+
+/* BOTTOM LAYER — 3 drips */
+.d5 { left: 40px; height: 28px; }
+.d6 { left: 110px; height: 22px; }
+.d7 { left: 170px; height: 26px; }
+
+/* Candles — Cosmic Ice Blue */
+.cake-candles {
+  position: absolute;
+  top: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 22px;
+}
+
+.candle {
+  width: 16px;
+  height: 42px;
+  background: #7fd4ff; /* light cosmic blue */
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 0 12px #7fd4ff;
+}
+
+.candle-flame {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  width: 18px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle,
+    #fff7c2 0%,
+    #ffd27a 40%,
+    #ff9f3f 70%,
+    rgba(255,150,0,0) 100%
+  );
+  border-radius: 50%;
+  animation: flameFlicker 0.25s infinite alternate ease-in-out;
+  filter: blur(2px)
+          drop-shadow(0 0 16px rgba(255,200,120,0.95))
+          drop-shadow(0 0 26px rgba(255,150,80,0.7));
+}
+
+@keyframes flameFlicker {
+  0% { transform: translateX(-50%) scale(1); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1.2); opacity: 0.85; }
+}
+.candle-smoke {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle,
+    rgba(255,255,255,0.9) 0%,
+    rgba(255,255,255,0.4) 40%,
+    rgba(255,255,255,0) 100%
+  );
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+@keyframes smokeParticle {
+  0% { opacity: 0.9; transform: translateX(-50%) translateY(0) scale(1); }
+  50% { opacity: 0.5; transform: translateX(calc(-50% + 12px)) translateY(-30px) scale(1.7); }
+  100% { opacity: 0; transform: translateX(calc(-50% - 18px)) translateY(-70px) scale(2.4); }
+}
+
+/* Countdown */
+.countdown {
+  position: fixed;
+  top: calc(15% - 15px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #ff9dff;
+  text-shadow: 0 0 18px #ff4fd8;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 9999;
+}
+
+/* Birthday text */
+.happy-birthday {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  text-shadow: 0 0 22px #ff7bff;
+  z-index: 9999;
+}
+
+.happy-birthday.visible { opacity: 1; }
+
+/* Final message */
+.final-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  text-align: center;
+  width: 80%;
+  line-height: 1.4;
+  z-index: 9999;
+}
+
+.final-message.visible { opacity: 1; }
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  opacity: 1;
+  transition: transform 1.4s ease-out, opacity 1.4s ease-out;
+  z-index: 99999;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="title">Find the Cosmic Orb</div>
+
+<div class="box-area">
+
+  <div class="gift-box" id="box1">
+    <div class="base"></div>
+    <div class="lid"></div>
+  </div>
+
+  <div class="gift-box" id="box2">
+    <div class="orb-ball" id="orbBall">🔮</div>
+    <div class="base"></div>
+    <div class="lid" id="middleLid"></div>
+  </div>
+
+  <div class="gift-box" id="box3">
+    <div class="base"></div>
+    <div class="lid"></div>
+  </div>
+
+</div>
+
+<!-- Cake -->
+<div class="cake" id="cake">
+
+  <div class="cake-candles">
+    <div class="candle"><div class="candle-flame"></div><div class="candle-smoke"></div></div>
+    <div class="candle"><div class="candle-flame"></div><div class="candle-smoke"></div></div>
+    <div class="candle"><div class="candle-flame"></div><div class="candle-smoke"></div></div>
+  </div>
+
+  <div class="cake-layer top">
+    <div class="drip d1"></div>
+    <div class="drip d2"></div>
+  </div>
+
+  <div class="cake-layer middle">
+    <div class="drip d3"></div>
+    <div class="drip d4"></div>
+ 
+  </div>
+
+  <div class="cake-layer bottom">
+    <div class="drip d5"></div>
+    <div class="drip d6"></div>
+    <div class="drip d7"></div>
+
+
+
+  </div>
+
+</div>
+
+<div class="countdown"></div>
+
+</div> <!-- container -->
+</body>
+</html>
+
+
+<script>
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+const box1 = document.getElementById("box1");
+const box2 = document.getElementById("box2");
+const box3 = document.getElementById("box3");
+const middleLid = document.getElementById("middleLid");
+const orbBall = document.getElementById("orbBall");
+const titleEl = document.querySelector(".title");
+const cake = document.getElementById("cake");
+
+const boxes = [box1, box2, box3];
+const slotX = [0, 190, 380];
+let lastSwap = -1;
+let shuffleDone = false;
+let finalTriggered = false;
+
+function applyPositions() {
+  boxes.forEach((box, index) => {
+    box.style.left = slotX[index] + "px";
+  });
+}
+applyPositions();
+
+/* ------------------ ORB ANIMATION ------------------ */
+(async function(){
+  await wait(250);
+  middleLid.style.transform = "translateY(-90px)";
+  await wait(600);
+
+  orbBall.style.opacity = "1";
+  orbBall.style.zIndex = "0";
+  orbBall.style.transform = "translateX(-50%) translateY(80px)";
+  await wait(200);
+
+  orbBall.style.transform = "translateX(-50%) translateY(-40px)";
+  await wait(800);
+
+  orbBall.style.transform = "translateX(-50%) translateY(80px)";
+  await wait(700);
+
+  orbBall.style.opacity = "0";
+  middleLid.style.transform = "translateY(0)";
+  await wait(600);
+
+  if (titleEl) titleEl.style.opacity = "0";
+
+  startShuffle();
+
+  orbBall.style.pointerEvents = "none";
+  middleLid.style.pointerEvents = "none";
+})();
+
+/* ------------------ SHUFFLE ------------------ */
+function startShuffle() {
+  let swaps = 0;
+  const maxSwaps = 5;
+  const arcHeight = 120;
+
+  function doSwap() {
+    if (swaps >= maxSwaps) {
+      enableClicks();
+      return;
+    }
+
+    let i;
+    do {
+      i = Math.random() < 0.5 ? 0 : 1;
+    } while (i === lastSwap);
+    lastSwap = i;
+
+    const j = i + 1;
+    const boxA = boxes[i];
+    const boxB = boxes[j];
+    const dx = slotX[j] - slotX[i];
+
+    boxA.style.transition = "none";
+    boxB.style.transition = "none";
+    boxA.style.transform = "translate(0,0)";
+    boxB.style.transform = "translate(0,0)";
+    void boxA.offsetWidth;
+
+    boxA.style.transition = "transform 0.4s cubic-bezier(0.45,-0.3,0.55,1.3)";
+    boxB.style.transition = "transform 0.4s cubic-bezier(0.45,-0.3,0.55,1.3)";
+    boxA.style.transform = `translate(0,-${arcHeight}px)`;
+    boxB.style.transform = `translate(0,${arcHeight}px)`;
+
+    setTimeout(() => {
+      boxA.style.transition = "transform 0.4s cubic-bezier(0.45,-0.3,0.55,1.3)";
+      boxB.style.transition = "transform 0.4s cubic-bezier(0.45,-0.3,0.55,1.3)";
+      boxA.style.transform = `translate(${dx}px,0)`;
+      boxB.style.transform = `translate(${-dx}px,0)`;
+
+      setTimeout(() => {
+        [boxes[i], boxes[j]] = [boxes[j], boxes[i]];
+        boxes.forEach((box, index) => {
+          box.style.transition = "none";
+          box.style.transform = "translate(0,0)";
+          box.style.left = slotX[index] + "px";
+        });
+        swaps++;
+        setTimeout(doSwap, 200);
+      }, 400);
+    }, 400);
+  }
+
+  doSwap();
+}
+
+function enableClicks() {
+  shuffleDone = true;
+  boxes.forEach(box => {
+    box.classList.remove("disabled");
+  });
+}
+
+/* ------------------ CLICK HANDLING ------------------ */
+box1.onclick = () => triggerFinal(1);
+box2.onclick = () => triggerFinal(2);
+box3.onclick = () => triggerFinal(3);
+
+async function triggerFinal(n){
+  if(!shuffleDone || finalTriggered) return;
+  finalTriggered = true;
+
+  const clicked = document.getElementById("box" + n);
+  const lid = clicked.querySelector(".lid");
+
+  lid.style.transform = "translateY(-90px)";
+  await wait(600);
+
+  document.querySelector(".box-area").style.display = "none";
+
+  showBlowText();
+  showCake();
+  runCountdown();
+
+  await wait(3000);
+  await wait(300);
+  extinguishCandles();
+  await wait(2000);
+  hideCake();
+  await wait(600);
+  showBirthday();
+  await wait(4000);
+  showMessage();
+}
+
+/* ------------------ BLOW TEXT ------------------ */
+const blowText = document.createElement("div");
+blowText.className = "blow-text";
+blowText.innerText = "Take a deep breath… and make a wish in....";
+document.body.appendChild(blowText);
+
+function showBlowText(){
+  blowText.style.opacity = "1";
+  blowText.style.textShadow = "0 0 18px #ff7bff";
+  setTimeout(()=>{ blowText.style.opacity = "0"; }, 1200);
+}
+
+/* ------------------ CAKE CONTROL ------------------ */
+function showCake(){
+  cake.style.opacity = "1";
+  cake.style.top = "50%";
+  cake.style.transform = "translate(-50%, -50%) scale(1)";
+  cake.style.filter =
+    "drop-shadow(0 0 25px rgba(255,120,255,0.55)) drop-shadow(0 0 45px rgba(255,150,255,0.35))";
+}
+
+function extinguishCandles(){
+  cake.classList.add("blown-out");
+  void cake.offsetWidth;
+
+  document.querySelectorAll(".candle-flame").forEach(f=>{
+    f.style.opacity = "0";
+    f.style.animation = "none";
+    f.style.boxShadow = "none";
+  });
+
+  document.querySelectorAll(".candle-smoke").forEach(s=>{
+    s.style.opacity = "1";
+    s.style.animation = "smokeParticle 1.8s ease-out forwards";
+  });
+}
+
+function hideCake(){
+  cake.style.opacity = "0";
+  cake.style.transform = "translate(-50%,-50%) scale(0.6)";
+}
+
+/* ------------------ COUNTDOWN ------------------ */
+const countdown = document.createElement("div");
+countdown.className = "countdown";
+document.body.appendChild(countdown);
+
+async function runCountdown(){
+  const seq = ["3","2","1"];
+  for(const n of seq){
+    countdown.innerText = n;
+    countdown.style.opacity = "1";
+    countdown.style.textShadow = "0 0 22px #ff4fd8";
+    await wait(800);
+    countdown.style.opacity = "0";
+    await wait(200);
+  }
+}
+
+/* ------------------ HAPPY BIRTHDAY ------------------ */
+const hb = document.createElement("div");
+hb.className = "happy-birthday";
+hb.innerText = "HAPPY BIRTHDAY!";
+document.body.appendChild(hb);
+
+function showBirthday(){
+  hb.classList.add("visible");
+  hb.style.textShadow = "0 0 28px #ff7bff";
+  spawnCenterConfetti(100);
+}
+
+/* ------------------ FINAL MESSAGE ------------------ */
+const msg = document.createElement("div");
+msg.className = "final-message";
+msg.innerHTML = "Your message goes here — add anything you want!";
+document.body.appendChild(msg);
+
+function showMessage(){
+  hb.classList.remove("visible");
+  msg.classList.add("visible");
+  msg.style.textShadow = "0 0 18px #ff7bff";
+}
+
+/* ------------------ CONFETTI ------------------ */
+function spawnCenterConfetti(count){
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+
+  for(let i = 0; i < count; i++){
+    const c = document.createElement("div");
+    c.className = "confetti";
+
+    c.style.left = cx + "px";
+    c.style.top = cy + "px";
+
+    /* Updated cosmic confetti palette */
+    const colors = ["#ff7bff","#ffd6ff","#b388ff","#ff9ad9","#c3a6ff","#7fd4ff"];
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 120 + Math.random() * 180;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance;
+    const rotation = Math.random() * 720 - 360;
+
+    c.style.transform = "translate(0,0) rotate(0deg)";
+    document.body.appendChild(c);
+
+    setTimeout(() => {
+      c.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`;
+      c.style.opacity = "0";
+    }, 30);
+
+    setTimeout(() => c.remove(), 1400);
+  }
+}
+</script>
