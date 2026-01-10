@@ -2,160 +2,187 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>The Birthday Riddle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4 • The Birthday Riddle</title>
+
+<!-- FREE LIBRARIES -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  width: 100%; height: 100%; overflow: hidden;
-  font-family: system-ui, sans-serif;
-  background: #050514;
-  color: #f5f5ff;
+/* ===============================
+   PURPLE COSMIC BAG THEME
+================================ */
+:root {
+  --void-purple: #05010c;
+  --deep-purple: #14001f;
+  --nebula-purple: #2a0445;
+  --amethyst: #8b5cf6;
+  --soft-lavender: #d6c7ff;
+  --star-white: #f5f2ff;
 }
-body { display: flex; align-items: center; justify-content: center; }
 
+/* RESET */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* BACKGROUND — COSMIC PURPLE FOG */
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: system-ui, sans-serif;
+  color: var(--star-white);
+  background:
+    radial-gradient(1200px 600px at 20% 15%, rgba(139,92,246,0.35), transparent 60%),
+    radial-gradient(900px 500px at 80% 30%, rgba(173,128,255,0.28), transparent 65%),
+    radial-gradient(700px 700px at 50% 80%, rgba(88,24,124,0.45), transparent 60%),
+    linear-gradient(180deg, var(--nebula-purple), var(--void-purple));
+  overflow-x: hidden;
+}
+
+/* LAYOUT */
+body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 0 80px;
+}
+
+/* PARTICLES — VERY SOFT */
+#particles-js {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+/* CONTAINER */
 .container {
   position: relative;
-  width: 100vw; height: 100vh;
-  padding: 20px;
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: center;
-  text-align: center;
-  background:
-    radial-gradient(circle at 20% 0, rgba(146,83,255,0.25) 0, transparent 55%),
-    radial-gradient(circle at 80% 0, rgba(0,196,255,0.25) 0, transparent 55%);
-}
-
-/* Stars */
-.stars { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-.star {
-  position: absolute; width: 2px; height: 2px; border-radius: 50%;
-  background: rgba(255,255,255,0.8); opacity: 0.2;
-  animation: twinkle 3s infinite ease-in-out;
-}
-@keyframes twinkle {
-  0%,100% { opacity: 0.15; }
-  50% { opacity: 1; }
-}
-
-/* Content */
-.title {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-  text-shadow: 0 0 14px rgba(186,134,255,0.9);
   z-index: 2;
-}
-
-.riddle-box {
-  background: rgba(22,18,48,0.8);
-  padding: 20px 30px;
-  border-radius: 12px;
-  border: 1px solid rgba(155,144,255,0.4);
+  width: 100%;
   max-width: 650px;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  z-index: 2;
+  padding: 26px;
+  text-align: center;
 }
 
-.input-area {
-  margin-top: 20px;
-  z-index: 2;
+/* TITLE */
+.title {
+  font-size: clamp(1.7rem, 5vw, 2.2rem);
+  margin-bottom: 18px;
+  color: var(--soft-lavender);
+  text-shadow:
+    0 0 12px rgba(214,199,255,0.9),
+    0 0 40px rgba(139,92,246,0.7);
+  animation: float 5s ease-in-out infinite;
 }
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* RIDDLE BOX */
+.riddle-box {
+  background: rgba(30, 6, 52, 0.75);
+  padding: 26px 28px;
+  border-radius: 18px;
+  border: 1px solid rgba(180,150,255,0.35);
+  box-shadow:
+    0 0 40px rgba(120,60,200,0.35),
+    inset 0 0 30px rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px);
+  line-height: 1.7;
+  font-size: 1.03rem;
+}
+
+/* INPUT */
+.input-area { margin-top: 26px; }
 
 input {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  width: 260px;
-  font-size: 1rem;
-  background: rgba(255,255,255,0.1);
+  width: 82%;
+  max-width: 300px;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(200,170,255,0.4);
+  background: rgba(255,255,255,0.07);
   color: #fff;
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.3);
-  transition: 0.2s;
+  font-size: 1rem;
 }
+
+input::placeholder { color: #e0d6ff; }
+
 input:focus {
-  border-color: #ffc6ff;
-  box-shadow: 0 0 10px rgba(255,198,255,0.6);
+  outline: none;
+  box-shadow:
+    0 0 16px rgba(173,128,255,0.9),
+    0 0 30px rgba(139,92,246,0.7);
+  border-color: var(--soft-lavender);
+}
+
+/* BUTTONS */
+.buttons-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
 }
 
 button {
-  margin-top: 10px;
-  padding: 8px 18px;
+  padding: 12px 30px;
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  background: #ffc6ff;
-  color: #2a0036;
-  font-weight: 600;
-  transition: 0.2s;
-}
-button:hover {
-  transform: scale(1.05);
-}
-
-.buttons-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.feedback {
-  margin-top: 14px;
-  min-height: 22px;
   font-size: 1rem;
-  color: #ffd6ff;
-  text-shadow: 0 0 8px rgba(255,197,255,0.6);
-  z-index: 2;
+  font-weight: 700;
+  color: #1a002b;
+  background: linear-gradient(135deg, #9f7bff, #e1d4ff);
+  box-shadow:
+    0 0 22px rgba(160,120,255,0.7),
+    inset 0 0 10px rgba(255,255,255,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+button:hover {
+  box-shadow:
+    0 0 34px rgba(200,170,255,1);
+}
+
+button:active { transform: scale(0.95); }
+
+/* FEEDBACK */
+.feedback {
+  margin-top: 18px;
+  min-height: 26px;
+  font-size: 1.08rem;
+  text-shadow: 0 0 14px rgba(200,160,255,0.8);
 }
 
 .hint-text {
-  margin-top: 4px;
-  min-height: 18px;
-  font-size: 0.9rem;
-  color: #c2c6ff;
-  z-index: 2;
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: #ddd1ff;
 }
 
-/* Success star */
+/* SUCCESS STAR */
 .success-star {
   opacity: 0;
-  font-size: 3rem;
-  margin-top: 20px;
-  transform: scale(0.1);
-  transition: 0.8s ease-out;
-  z-index: 2;
-}
-.success-star.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Confetti */
-.confetti {
-  position: fixed;
-  width: 8px;
-  height: 14px;
-  background: red;
-  top: -10px;
-  border-radius: 2px;
-  opacity: 0.9;
-  z-index: 9999;
-  pointer-events: none;
-  transition: transform 1.4s linear, top 1.4s linear;
+  font-size: 3.8rem;
+  margin-top: 26px;
+  filter:
+    drop-shadow(0 0 18px #e1d4ff)
+    drop-shadow(0 0 45px #8b5cf6);
 }
 </style>
 </head>
 
 <body>
+
+<div id="particles-js"></div>
+
 <div class="container">
 
-  <div class="stars" id="stars"></div>
-
-  <div class="title">Module 3 • The Birthday Riddle</div>
+  <div class="title">Module 4 • The Birthday Riddle</div>
 
   <div class="riddle-box">
     <b>Riddle:</b><br><br>
@@ -169,7 +196,7 @@ button:hover {
   </div>
 
   <div class="input-area">
-    <input id="answerInput" placeholder="Type your answer..." />
+    <input id="answerInput" placeholder="Type your answer & press Enter…" />
     <div class="buttons-row">
       <button onclick="checkAnswer()">Submit</button>
       <button onclick="showHint()">Hint</button>
@@ -180,91 +207,70 @@ button:hover {
   <div class="hint-text" id="hintText"></div>
 
   <div class="success-star" id="successStar">⭐</div>
-
 </div>
 
 <script>
-/* STARFIELD */
-(function(){
-  const c = document.getElementById("stars");
-  for(let i=0;i<120;i++){
-    const s=document.createElement("div");
-    s.className="star";
-    s.style.left=Math.random()*100+"%";
-    s.style.top=Math.random()*100+"%";
-    s.style.animationDelay=Math.random()*3+"s";
-    c.appendChild(s);
+/* PARTICLES — PURPLE ONLY */
+particlesJS("particles-js", {
+  particles: {
+    number: { value: 55 },
+    color: { value: ["#d6c7ff", "#9f7bff", "#b08cff"] },
+    opacity: { value: 0.6 },
+    size: { value: 2 },
+    move: { speed: 0.25 }
+  },
+  interactivity: {
+    events: {
+      onhover: { enable: true, mode: "grab" }
+    }
   }
-})();
+});
 
-/* CONFETTI */
-function launchConfetti() {
-  const duration = 1500;
-  const end = Date.now() + duration;
+/* ENTER TO SUBMIT */
+answerInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    checkAnswer();
+  }
+});
 
-  (function frame() {
-    const confetti = document.createElement("div");
-    confetti.className = "confetti";
-    confetti.style.left = Math.random() * 100 + "vw";
-    confetti.style.background = `hsl(${Math.random() * 360}, 90%, 70%)`;
-
-    document.body.appendChild(confetti);
-
-    requestAnimationFrame(() => {
-      confetti.style.top = "110vh";
-      confetti.style.transform =
-        `translateX(${(Math.random() - 0.5) * 200}px) rotate(${Math.random() * 720}deg)`;
-    });
-
-    setTimeout(() => confetti.remove(), 1500);
-
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-}
-
-/* HINT LOGIC */
+/* HINTS */
 const hints = [
-  "Hint 1: It’s not an object… it’s a person.",
-  "Hint 2: It’s the person whose birthday it is.",
-  "Final Hint: The answer is literally you."
+  "Hint 1: It isn’t an object.",
+  "Hint 2: It exists once every year.",
+  "Final Hint: It’s you."
 ];
 let hintIndex = 0;
 
 function showHint() {
-  const hintEl = document.getElementById("hintText");
-  if (hintIndex < hints.length) {
-    hintEl.textContent = hints[hintIndex];
-    hintIndex++;
-  } else {
-    hintEl.textContent = hints[hints.length - 1];
-  }
+  hintText.textContent =
+    hints[Math.min(hintIndex++, hints.length - 1)];
 }
 
 /* CHECK ANSWER */
 function checkAnswer() {
-  const raw = document.getElementById("answerInput").value.trim().toLowerCase();
-  const feedback = document.getElementById("feedback");
-  const star = document.getElementById("successStar");
-
-  // Accept "you", "it's you", "its you", "you are", "it is you"
+  const raw = answerInput.value.trim().toLowerCase();
   const normalized = raw.replace(/[^a-z]/g, " ").replace(/\s+/g, " ").trim();
+  const valid = ["you", "its you", "it's you", "me","jaisveen"];
 
-  const validAnswers = ["you", "its you", "it's you", "you are", "it is you","me"];
-  const isCorrect = validAnswers.includes(normalized);
+  if (valid.includes(normalized)) {
+    feedback.textContent = "✨ Exactly. The universe is celebrating you.";
 
-  if (isCorrect) {
-    feedback.textContent = "Exactly. The universe is celebrating you.";
-    star.classList.add("visible");
-    launchConfetti();
+    gsap.to("#successStar", {
+      opacity: 1,
+      scale: 1.25,
+      rotation: 360,
+      duration: 1.3,
+      ease: "elastic.out(1,0.5)"
+    });
 
     setTimeout(() => {
-      window.location.href = "module5.html";
-    }, 1800);
-
-  } else if (raw.length === 0) {
-    feedback.textContent = "Type your guess first.";
+      location.href = "module5.html";
+    }, 2400);
+  } else if (!raw) {
+    feedback.textContent = "Speak your answer into the cosmos…";
   } else {
-    feedback.textContent = "Not quite. Try thinking about who this day is really for.";
+    feedback.textContent = "Not quite. Think closer.";
   }
 }
 </script>

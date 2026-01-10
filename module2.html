@@ -2,227 +2,240 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Cosmic Rune Grove</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cosmic Crystal Memory</title>
 
 <style>
-/* RESET */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  width: 100%; height: 100%; overflow: hidden;
-  font-family: system-ui, sans-serif;
-  background: #050514;
-  color: #f5f5ff;
+/* ---------------------------------------------------
+   GLOBAL
+--------------------------------------------------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #2b0057 0%, #4a0a7f 50%, #1a002f 100%);
+  color: #fff;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-body { display: flex; align-items: center; justify-content: center; }
 
-/* MAIN CONTAINER */
-.game-container {
-  position: relative;
-  width: 100vw; height: 100vh;
+#moduleContainer {
+  width: 100%;
+  max-width: 900px;
   padding: 20px;
-  display: flex; flex-direction: column;
-  justify-content: space-between; align-items: center;
-  background:
-    radial-gradient(circle at 20% 0, rgba(146,83,255,0.25) 0, transparent 55%),
-    radial-gradient(circle at 80% 0, rgba(0,196,255,0.25) 0, transparent 55%);
+  padding-top: 40px;
+  text-align: center;
 }
 
-/* STARFIELD */
-.stars { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+/* ---------------------------------------------------
+   STARFIELD
+--------------------------------------------------- */
+#stars {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
 .star {
-  position: absolute; width: 2px; height: 2px; border-radius: 50%;
-  background: rgba(255,255,255,0.8); opacity: 0.2;
-  animation: twinkle 3s infinite ease-in-out;
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 2.5s infinite ease-in-out;
 }
 @keyframes twinkle {
-  0%,100% { opacity: 0.15; }
+  0%,100% { opacity: 0.2; }
   50% { opacity: 1; }
 }
 
-/* HUD */
-.hud {
-  z-index: 2;
-  width: 100%; max-width: 900px;
-  display: flex; justify-content: space-between;
-}
-.module-label { font-size: .9rem; color: #b1b1ff; letter-spacing: .15em; }
-.title { margin-top: 6px; font-size: 1.4rem; font-weight: 600; }
-.subtitle { margin-top: 4px; font-size: .95rem; color: #d5d5ff; }
-
-.hint-box {
-  background: rgba(22,18,48,0.8);
-  padding: 10px 14px;
+/* ---------------------------------------------------
+   UI
+--------------------------------------------------- */
+#statusMessage {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.12);
   border-radius: 10px;
-  font-size: .85rem;
+  backdrop-filter: blur(6px);
+}
+#attemptsText {
+  margin-bottom: 20px;
+  opacity: 0.85;
+}
+button {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 10px 18px;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.25s;
+}
+button:hover { background: rgba(255,255,255,0.25); }
+button:disabled { opacity: 0.4; }
+
+/* ---------------------------------------------------
+   CRYSTAL GRID
+--------------------------------------------------- */
+#crystalsRow {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 25px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
 }
 
-/* STATUS */
-.status-bar { z-index: 2; text-align: center; }
-.status-message { min-height: 22px; font-size: .95rem; }
-.attempts { font-size: .8rem; color: #a9b0ff; }
-
-/* GROVE */
-.grove {
+.crystal {
+  width: 120px;
+  height: 170px;
   position: relative;
-  flex: 1;
-  width: 100%; max-width: 900px;
-  display: flex; align-items: flex-end; justify-content: center;
-  padding-bottom: 70px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.crystal:hover { transform: scale(1.05); }
+.crystal.disabled { pointer-events: none; opacity: 0.5; }
+
+/* ---------------------------------------------------
+   OUTER AURA GLOW (NOT CLIPPED)
+--------------------------------------------------- */
+.crystal-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 80px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  border-radius: 40% 40% 30% 30%;
+  pointer-events: none;
+  box-shadow: none;
+  transition: box-shadow 0.25s ease-out;
+  z-index: 1;
+}
+.crystal-glow.active {
+  box-shadow:
+    0 0 95px 25px rgba(255,255,255,0.95),
+    0 0 150px 60px rgba(255,255,255,0.85);
+}
+
+/* ---------------------------------------------------
+   CRYSTAL CORE (INSIDE)
+--------------------------------------------------- */
+.crystal-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 120px;
+  border-radius: 40% 40% 30% 30%;
+  background: radial-gradient(circle at 30% 20%, #f7e6ff, #a66bff 40%, #3a0b6e 80%);
+  box-shadow:
+    0 0 75px rgba(200,150,255,1),
+    0 0 120px rgba(150,80,255,0.95);
+  overflow: hidden;
   z-index: 2;
 }
 
-.trees-row {
-  display: flex; justify-content: space-between;
-  width: 85%; max-width: 750px;
-}
-
-/* TREE */
-.tree {
-  width: 90px; height: 220px;
-  cursor: pointer;
-  position: relative;
-  transition: .18s ease-out;
-  filter: drop-shadow(0 0 12px rgba(150,150,255,0.35)); /* MEDIUM STATIC GLOW */
-}
-.tree.disabled { pointer-events: none; }
-
-.tree-base {
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 20px; height: 70px; background: #0b050e; border-radius: 10px;
-}
-
-.tree-canopy {
-  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-  width: 120px; height: 140px; border-radius: 50%;
+/* Nebula */
+.crystal-nebula {
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle at 20% 10%, rgba(171,248,255,0.6) 0, transparent 45%),
-    radial-gradient(circle at 80% 20%, rgba(255,197,255,0.6) 0, transparent 45%),
-    radial-gradient(circle at 40% 80%, rgba(166,255,201,0.5) 0, transparent 45%),
-    radial-gradient(circle at 70% 70%, rgba(149,198,255,0.6) 0, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(45,12,80,0.9) 0, rgba(12,5,26,1) 75%);
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.6), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(160,120,255,0.7), transparent 60%);
+  opacity: 0.9;
+  mix-blend-mode: screen;
 }
 
+/* Sheen */
+.crystal-sheen {
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(120deg,
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.02) 40%,
+    rgba(255,255,255,0.3) 70%,
+    rgba(255,255,255,0.02) 100%);
+  transform: translateX(-60%);
+  mix-blend-mode: screen;
+}
+
+/* ---------------------------------------------------
+   RUNES
+--------------------------------------------------- */
 .rune {
-  position: absolute; bottom: 98px; left: 50%; transform: translateX(-50%);
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid #fff;
-  background: radial-gradient(circle, #fff, #4b1c6e);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  text-shadow: 0 0 14px rgba(255,255,255,1);
+  pointer-events: none;
+  z-index: 3;
 }
 
-/* ULTRA BRIGHT DYNAMIC GLOW (C2) */
-.tree.dynamic-glow {
-  filter:
-    drop-shadow(0 0 25px rgba(255,255,255,1))
-    drop-shadow(0 0 55px rgba(180,120,255,1));
-  transform: scale(1.06);
+/* ---------------------------------------------------
+   TAP FEEDBACK
+--------------------------------------------------- */
+.correct-tap { animation: correctPulse 0.4s ease-out; }
+@keyframes correctPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
-
-/* TAP ANIMATIONS */
-.tree.correct-tap { animation: correctTap .3s ease-out; }
-@keyframes correctTap {
-  0% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.06); }
-  100% { transform: translateY(-2px) scale(1.02); }
-}
-
-.tree.wrong-tap { animation: wrongTap .3s ease-out; }
-@keyframes wrongTap {
+.wrong-tap { animation: wrongShake 0.4s ease-out; }
+@keyframes wrongShake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-6px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-4px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-6px); }
   100% { transform: translateX(0); }
 }
 
-/* STAR + PATH */
-.center-area {
-  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-  width: 140px; height: 140px;
-  display: flex; align-items: center; justify-content: center;
-}
-
-.birthday-star {
-  opacity: 0;
-  transform: translateY(30px) scale(.1);
-  font-size: 3rem;
-}
-.birthday-star.visible { animation: star-rise 1.6s ease-out forwards; }
-
-@keyframes star-rise {
-  0% { transform: translateY(24px) scale(.1); }
-  60% { transform: translateY(-6px) scale(1.1); }
-  100% { transform: translateY(0) scale(1); }
-}
-
-.path {
-  opacity: 0;
-  width: 200px; height: 40px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 20px;
-}
-.path.visible { animation: path-appear 1.4s ease-out forwards; }
-
-@keyframes path-appear {
-  0% { opacity: 0; transform: scaleX(.5); }
-  100% { opacity: 1; transform: scaleX(1); }
-}
-
-/* BUTTON */
-.btn {
-  border: none; border-radius: 999px;
-  padding: 7px 16px;
-  cursor: pointer;
-  background: #ffc6ff;
-  font-weight: 600;
-  color: #2a0036;
+/* ---------------------------------------------------
+   MOBILE RESPONSIVE
+--------------------------------------------------- */
+@media (max-width: 600px) {
+  .crystal {
+    width: 95px;
+    height: 150px;
+  }
+  .crystal-core,
+  .crystal-glow {
+    width: 70px;
+    height: 105px;
+  }
+  .rune {
+    font-size: 1.7rem;
+  }
 }
 </style>
 </head>
 
 <body>
-<div class="game-container">
 
-  <div class="stars" id="stars"></div>
+<div id="stars"></div>
 
-  <div class="hud">
-    <div>
-      <div class="module-label">Module 2 • Cosmic Rune Grove</div>
-      <div class="title">Listen to the Trees, Learn the Pattern</div>
-      <div class="subtitle">Five nebula-touched rune trees will show you a secret order.</div>
-    </div>
-
-    <div class="hint-box">
-      <div class="hint-title">Hint</div>
-      <div class="hint-text">Watch the glowing runes. Then repeat the order.</div>
-    </div>
-  </div>
-
-  <div class="status-bar">
-    <div class="status-message" id="statusMessage">Tap “Show Pattern” to begin.</div>
-    <div class="attempts" id="attemptsText">Attempts: 0 • Sequence length: 4</div>
-  </div>
-
-  <div class="grove">
-    <div class="trees-row" id="treesRow"></div>
-
-    <div class="center-area">
-      <div class="birthday-star" id="birthdayStar">⭐</div>
-      <div class="path" id="path"></div>
-    </div>
-  </div>
-
-  <div class="bottom-bar" style="display:flex;justify-content:space-between;width:100%;max-width:900px;">
-    <button class="btn" id="replayPatternBtn">Show Pattern</button>
-  </div>
-
+<div id="moduleContainer">
+  <div id="statusMessage">Tap “Show Pattern” to begin.</div>
+  <div id="attemptsText">Attempts: 0 • Sequence length: 4</div>
+  <button id="replayPatternBtn">Show Pattern</button>
+  <div id="crystalsRow"></div>
 </div>
 
 <script>
-/* STARFIELD */
+/* ---------------------------------------------------
+   STARFIELD
+--------------------------------------------------- */
 (function(){
-  const c = document.getElementById("stars");
+  const c=document.getElementById("stars");
   for(let i=0;i<120;i++){
     const s=document.createElement("div");
     s.className="star";
@@ -233,11 +246,12 @@ body { display: flex; align-items: center; justify-content: center; }
   }
 })();
 
-/* FIXED PATTERN: 3 → 5 → 2 → 4 (1-based)
-   Converted to 0-based: [2, 4, 1, 3] */
+/* ---------------------------------------------------
+   GAME LOGIC
+--------------------------------------------------- */
 const pattern=[2,4,1,3];
 
-let trees=[];
+let crystals=[];
 let playerIndex=0;
 let attempts=0;
 let showing=false;
@@ -246,83 +260,99 @@ let done=false;
 const statusEl=document.getElementById("statusMessage");
 const attemptsEl=document.getElementById("attemptsText");
 const replayBtn=document.getElementById("replayPatternBtn");
-const treesRow=document.getElementById("treesRow");
-const star=document.getElementById("birthdayStar");
-const path=document.getElementById("path");
+const crystalsRow=document.getElementById("crystalsRow");
 
 function setStatus(t){ statusEl.innerHTML=t; }
-function updateAttempts(){ attemptsEl.textContent=`Attempts: ${attempts} • Sequence length: 4`; }
-
-function createTree(i){
-  const t=document.createElement("div");
-  t.className="tree";
-  t.dataset.index=i;
-
-  t.innerHTML=`
-    <div class="tree-base"></div>
-    <div class="tree-canopy"></div>
-    <div class="rune"><span>${["✧","ᚠ","ᛃ","ᛟ","✶"][i]}</span></div>
-  `;
-
-  t.onclick=()=>onTreeClick(i);
-  treesRow.appendChild(t);
-  return t;
+function updateAttempts(){
+  attemptsEl.textContent=`Attempts: ${attempts} • Sequence length: 4`;
 }
 
-function buildTrees(){
+/* ---------------------------------------------------
+   CRYSTAL CREATION
+--------------------------------------------------- */
+function createCrystal(i){
+  const c=document.createElement("div");
+  c.className="crystal";
+  c.dataset.index=i;
+
+  c.innerHTML=`
+    <div class="crystal-glow"></div>
+    <div class="crystal-core">
+      <div class="crystal-nebula"></div>
+      <div class="crystal-sheen"></div>
+    </div>
+    <div class="rune"><span>${["✧","Ψ","S","ϟ","✦"][i]}</span></div>
+  `;
+
+  c.onclick=()=>onCrystalClick(i);
+  crystalsRow.appendChild(c);
+  return c;
+}
+
+function buildCrystals(){
   for(let i=0;i<5;i++){
-    trees.push(createTree(i));
+    crystals.push(createCrystal(i));
   }
 }
 
-/* ALWAYS PLAYS GLOW */
-function glowTree(i,delay){
+/* ---------------------------------------------------
+   WHITE GLOW
+--------------------------------------------------- */
+function glowCrystal(i,delay){
   setTimeout(()=>{
-    const t=trees[i];
+    const glow=crystals[i].querySelector(".crystal-glow");
 
-    t.classList.remove("dynamic-glow");
-    void t.offsetWidth;
-    t.classList.add("dynamic-glow");
+    glow.classList.remove("active");
+    void glow.offsetWidth;
+    glow.classList.add("active");
 
-    setTimeout(()=>t.classList.remove("dynamic-glow"),500);
+    setTimeout(()=>glow.classList.remove("active"),600);
   },delay);
 }
 
+/* ---------------------------------------------------
+   SHOW PATTERN
+--------------------------------------------------- */
 function showPattern(){
   if(showing||done) return;
   showing=true;
   playerIndex=0;
-  disableTrees(true);
-  setStatus("Watch the glowing runes…");
+  disableCrystals(true);
+  setStatus("Watch the glowing crystals…");
 
   const step=900;
   for(let i=0;i<pattern.length;i++){
-    glowTree(pattern[i],i*step);
+    glowCrystal(pattern[i],i*step);
   }
 
   setTimeout(()=>{
     showing=false;
-    disableTrees(false);
+    disableCrystals(false);
     setStatus("Your turn. Repeat the order.");
   },pattern.length*step+300);
 }
 
-function disableTrees(b){
-  trees.forEach(t=>t.classList.toggle("disabled",b));
+function disableCrystals(b){
+  crystals.forEach(c=>c.classList.toggle("disabled",b));
 }
 
-function onTreeClick(i){
+/* ---------------------------------------------------
+   PLAYER INPUT
+--------------------------------------------------- */
+function onCrystalClick(i){
   if(showing||done) return;
 
-  const t=trees[i];
-  t.classList.remove("wrong-tap","correct-tap");
+  const crystal=crystals[i];
+  const glow=crystal.querySelector(".crystal-glow");
+
+  crystal.classList.remove("wrong-tap","correct-tap");
 
   if(pattern[playerIndex]===i){
-    t.classList.add("correct-tap");
+    crystal.classList.add("correct-tap");
 
-    t.classList.remove("dynamic-glow");
-    void t.offsetWidth;
-    t.classList.add("dynamic-glow");
+    glow.classList.remove("active");
+    void glow.offsetWidth;
+    glow.classList.add("active");
 
     playerIndex++;
 
@@ -333,84 +363,40 @@ function onTreeClick(i){
     } else {
       setStatus(`Good… ${playerIndex}/4`);
     }
+
   } else {
     attempts++;
     updateAttempts();
-    t.classList.add("wrong-tap");
+    crystal.classList.add("wrong-tap");
     setStatus("Wrong. Watch again.");
-    disableTrees(true);
+    disableCrystals(true);
     setTimeout(showPattern,700);
   }
 }
 
-/* CONFETTI */
-function launchConfetti() {
-  const duration = 1500;
-  const end = Date.now() + duration;
-
-  (function frame() {
-    const confetti = document.createElement("div");
-    confetti.style.position = "fixed";
-    confetti.style.top = "-10px";
-    confetti.style.left = Math.random() * 100 + "vw";
-    confetti.style.width = "8px";
-    confetti.style.height = "14px";
-    confetti.style.background = `hsl(${Math.random() * 360}, 90%, 70%)`;
-    confetti.style.opacity = "0.9";
-    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-    confetti.style.borderRadius = "2px";
-    confetti.style.zIndex = "9999";
-    confetti.style.pointerEvents = "none";
-    confetti.style.transition = "transform 1.4s linear, top 1.4s linear";
-
-    document.body.appendChild(confetti);
-
-    requestAnimationFrame(() => {
-      confetti.style.top = "110vh";
-      confetti.style.transform = `translateX(${(Math.random() - 0.5) * 200}px) rotate(${Math.random() * 720}deg)`;
-    });
-
-    setTimeout(() => confetti.remove(), 1500);
-
-    if (Date.now() < end) {
-      requestAnimationFrame(frame);
-    }
-  })();
-}
-
+/* ---------------------------------------------------
+   SUCCESS
+--------------------------------------------------- */
 function success(){
   done=true;
-  disableTrees(true);
+  disableCrystals(true);
   replayBtn.disabled=true;
-  setStatus("The grove awakens…");
 
-  setTimeout(()=>star.classList.add("visible"),600);
-  setTimeout(()=>path.classList.add("visible"),1000);
-
-  launchConfetti();
+  setStatus("The crystals resonate…");
 
   setTimeout(()=>{
     window.location.href="module3.html";
-  },1800);
+  },1500);
 }
 
-function reset(){
-  playerIndex=0;
-  attempts=0;
-  done=false;
-  updateAttempts();
-  disableTrees(true);
-  replayBtn.disabled=false;
-  star.classList.remove("visible");
-  path.classList.remove("visible");
-  setStatus("Tap “Show Pattern” to begin.");
-}
-
+/* ---------------------------------------------------
+   INIT
+--------------------------------------------------- */
 replayBtn.onclick=showPattern;
 
-buildTrees();
-reset();
-setTimeout(showPattern,1200);
+buildCrystals();
+updateAttempts();
+disableCrystals(true);
 </script>
 
 </body>
