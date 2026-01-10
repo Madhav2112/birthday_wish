@@ -268,7 +268,12 @@ html, body {
   transition: transform 1.4s ease-out, opacity 1.4s ease-out;
   z-index: 99999;
 }
-
+.happy-birthday {
+  text-shadow:
+    0 0 18px #ff7bff,
+    0 0 28px #ff4fd8,
+    0 0 40px rgba(255,120,255,0.6);
+}
 .pre-count-text {
   position: fixed;
   top: calc(15% - 55px);
@@ -791,8 +796,20 @@ hb.innerText = "HAPPY BIRTHDAY!";
 document.body.appendChild(hb);
 
 function showBirthday(){
+  hb.style.opacity = "0";
+  hb.style.transform = "translate(-50%, -50%) scale(0.6)";
   hb.classList.add("visible");
-  spawnCenterConfetti(100);
+
+  // Confetti first
+  spawnCenterConfetti(160);
+
+  // Then pop the text in the middle
+  gsap.to(hb, {
+    opacity: 1,
+    scale: 1,
+    duration: 0.8,
+    ease: "back.out(1.8)"
+  });
 }
 
 /* ------------------ FINAL MESSAGE ------------------ */
@@ -802,10 +819,13 @@ msg.innerHTML = "Your message goes here — add anything you want!";
 document.body.appendChild(msg);
 
 function showMessage(){
+  // Hide the Happy Birthday text
   hb.classList.remove("visible");
+  hb.style.opacity = "0";
+
+  // Show the final message
   msg.classList.add("visible");
 }
-
 /* ------------------ CONFETTI ------------------ */
 function spawnCenterConfetti(count){
   const cx = window.innerWidth / 2;
