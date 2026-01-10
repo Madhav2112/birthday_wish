@@ -178,7 +178,7 @@ html, body {
   transform: translate(-50%, -50%);
 }
 
-/* NEW REALISTIC COSMIC CAKE */
+/* CAKE CONTAINER (empty until Part 2 loads animation) */
 #cake {
   position: fixed;
   left: 50%;
@@ -255,6 +255,7 @@ html, body {
   z-index: 9999;
 }
 
+
 .final-message.visible { opacity: 1; }
 
 /* Confetti */
@@ -266,6 +267,19 @@ html, body {
   opacity: 1;
   transition: transform 1.4s ease-out, opacity 1.4s ease-out;
   z-index: 99999;
+}
+
+.pre-count-text {
+  position: fixed;
+  top: calc(15% - 55px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  color: #ffb7ff;
+  text-shadow: 0 0 14px #ff6bff;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 9999;
 }
 </style>
 </head>
@@ -285,7 +299,7 @@ html, body {
 <!-- Cake aura -->
 <div id="cakeGlow"></div>
 
-<!-- Realistic cosmic cake animation -->
+<!-- Cake animation container -->
 <div id="cake"></div>
 
 <div class="container">
@@ -313,7 +327,7 @@ html, body {
 </div>
 
 <div class="countdown"></div>
-
+<div class="pre-count-text">Take a deep breath… and make a wish in</div>
 </div> <!-- container -->
 <script>
 /* ------------------ UTIL ------------------ */
@@ -344,7 +358,7 @@ const s_correct = new Howl({ src: ["https://assets.mixkit.co/sfx/preview/mixkit-
 const s_wrong   = new Howl({ src: ["https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"] });
 const s_round2  = new Howl({ src: ["https://assets.mixkit.co/sfx/preview/mixkit-magical-portal-2320.mp3"] });
 
-/* ------------------ SPARKLES ------------------ */
+/* ------------------ SPARKLES (still Lottie) ------------------ */
 let sparkleAnim = lottie.loadAnimation({
   container: document.getElementById("sparkleContainer"),
   renderer: "svg",
@@ -365,14 +379,131 @@ function playSparkle(x, y){
   setTimeout(()=> cont.style.opacity = "0", 600);
 }
 
-/* ------------------ REALISTIC COSMIC CAKE ------------------ */
-let cakeAnim = lottie.loadAnimation({
-  container: cake,
-  renderer: "svg",
-  loop: true,
-  autoplay: false,
-  path: "https://lottie.host/3c7e1f5d-9b8a-4c4e-9e2c-7f3f0f2c8a1f/cosmicCake.json"
-});
+/* ------------------ COSMIC CAKE (SVG + GSAP) ------------------ */
+let cakeBuilt = false;
+let flameTweens = [];
+
+function buildCakeSvg(){
+  if (cakeBuilt || !cake) return;
+  cakeBuilt = true;
+
+  cake.innerHTML = `
+    <svg viewBox="0 0 200 220" width="100%" height="100%">
+      <!-- Plate -->
+      <ellipse cx="100" cy="190" rx="70" ry="14" fill="#1a0828" opacity="0.9" />
+      <ellipse cx="100" cy="192" rx="80" ry="18" fill="rgba(0,0,0,0.65)" />
+
+      <!-- Bottom layer -->
+      <rect x="35" y="130" width="130" height="40" rx="14" fill="#3b145f" />
+      <rect x="35" y="130" width="130" height="16" rx="10"
+            fill="url(#bottomIcing)" />
+
+      <!-- Middle layer -->
+      <rect x="45" y="100" width="110" height="32" rx="12" fill="#662066" />
+      <rect x="45" y="100" width="110" height="14" rx="9"
+            fill="url(#midIcing)" />
+
+      <!-- Top layer -->
+      <rect x="60" y="78" width="80" height="28" rx="12" fill="#8b2c8f" />
+      <rect x="60" y="78" width="80" height="12" rx="8"
+            fill="url(#topIcing)" />
+
+      <!-- Little sprinkles -->
+      <circle cx="75" cy="90" r="2" fill="#ffd6ff" />
+      <circle cx="100" cy="86" r="2.3" fill="#ffb3ff" />
+      <circle cx="125" cy="92" r="2" fill="#ffe0ff" />
+      <circle cx="92" cy="104" r="2" fill="#ffc8ff" />
+      <circle cx="112" cy="106" r="2" fill="#ffd6ff" />
+
+      <!-- Candles -->
+      <g class="candle" transform="translate(80,70)">
+        <rect x="0" y="0" width="8" height="22" rx="3" fill="#fbe7ff" />
+        <rect x="1" y="2" width="6" height="18" rx="3" fill="#ff9ad9" />
+        <!-- Flame -->
+        <ellipse class="candle-flame" cx="4" cy="-6" rx="3" ry="7"
+                 fill="url(#flameGrad)" />
+        <!-- Smoke seed -->
+        <circle class="candle-smoke" cx="4" cy="-10" r="3"
+                fill="rgba(200,200,255,0.5)" opacity="0" />
+      </g>
+
+      <g class="candle" transform="translate(100,66)">
+        <rect x="0" y="0" width="8" height="22" rx="3" fill="#fbe7ff" />
+        <rect x="1" y="2" width="6" height="18" rx="3" fill="#ffb3ff" />
+        <ellipse class="candle-flame" cx="4" cy="-6" rx="3" ry="7"
+                 fill="url(#flameGrad)" />
+        <circle class="candle-smoke" cx="4" cy="-10" r="3"
+                fill="rgba(200,200,255,0.5)" opacity="0" />
+      </g>
+
+      <g class="candle" transform="translate(120,70)">
+        <rect x="0" y="0" width="8" height="22" rx="3" fill="#fbe7ff" />
+        <rect x="1" y="2" width="6" height="18" rx="3" fill="#ff7bd9" />
+        <ellipse class="candle-flame" cx="4" cy="-6" rx="3" ry="7"
+                 fill="url(#flameGrad)" />
+        <circle class="candle-smoke" cx="4" cy="-10" r="3"
+                fill="rgba(200,200,255,0.5)" opacity="0" />
+      </g>
+
+      <!-- Cosmic halo behind cake -->
+      <radialGradient id="haloGrad" cx="50%" cy="30%" r="60%">
+        <stop offset="0%" stop-color="rgba(255,140,255,0.95)" />
+        <stop offset="40%" stop-color="rgba(160,80,255,0.7)" />
+        <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+      </radialGradient>
+      <circle cx="100" cy="110" r="85" fill="url(#haloGrad)" opacity="0.7" />
+
+      <!-- Icing gradients -->
+      <linearGradient id="bottomIcing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ff9ad9" />
+        <stop offset="50%" stop-color="#ffd4ff" />
+        <stop offset="100%" stop-color="#ffb3ff" />
+      </linearGradient>
+      <linearGradient id="midIcing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ffb0ff" />
+        <stop offset="100%" stop-color="#ffe6ff" />
+      </linearGradient>
+      <linearGradient id="topIcing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ffe0ff" />
+        <stop offset="100%" stop-color="#ffffff" />
+      </linearGradient>
+
+      <!-- Flame gradient -->
+      <radialGradient id="flameGrad" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#ffffcc" />
+        <stop offset="45%" stop-color="#ffdd88" />
+        <stop offset="80%" stop-color="#ff7bd9" />
+        <stop offset="100%" stop-color="rgba(150,0,200,0.0)" />
+      </radialGradient>
+    </svg>
+  `;
+}
+function showPreCountText(){
+  const pct = document.querySelector(".pre-count-text");
+  pct.style.opacity = "1";
+  setTimeout(() => pct.style.opacity = "0", 1200);
+}
+function startFlameFlicker(){
+  flameTweens.forEach(t => t.kill());
+  flameTweens = [];
+  const flames = cake ? cake.querySelectorAll(".candle-flame") : [];
+  flames.forEach(f => {
+    const t = gsap.to(f, {
+      opacity: 0.35 + Math.random() * 0.4,
+      y: "-=2",
+      duration: 0.25 + Math.random() * 0.25,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+    flameTweens.push(t);
+  });
+}
+
+function stopFlameFlicker(){
+  flameTweens.forEach(t => t.kill());
+  flameTweens = [];
+}
 
 /* ------------------ APPLY POSITIONS ------------------ */
 function applyPositions() {
@@ -382,14 +513,14 @@ function applyPositions() {
 }
 applyPositions();
 
-/* ------------------ ORIGINAL ORB ANIMATION (RESTORED) ------------------ */
+/* ------------------ ORIGINAL ORB ANIMATION (EXACT) ------------------ */
 async function playOrbAnimation(){
   await wait(250);
-
   middleLid.style.transform = "translateY(-90px)";
   await wait(600);
 
   orbBall.style.opacity = "1";
+  orbBall.style.zIndex = "0";
   orbBall.style.transform = "translateX(-50%) translateY(80px)";
   await wait(200);
 
@@ -561,6 +692,7 @@ async function triggerFinal(n){
 
   showBlowText();
   showCake();
+  showPreCountText();
   runCountdown();
 
   await wait(3000);
@@ -586,27 +718,54 @@ function showBlowText(){
   setTimeout(()=> blowText.style.opacity = "0", 1200);
 }
 
-/* ------------------ CAKE CONTROL ------------------ */
+/* ------------------ CAKE CONTROL (SVG + GSAP) ------------------ */
 function showCake(){
+  buildCakeSvg();
+
   cake.style.opacity = "1";
-  cake.style.transform = "translate(-50%, -50%) scale(1)";
   cakeGlow.style.opacity = "1";
 
-  gsap.fromTo(cake, {scale:0.6, opacity:0}, {scale:1, opacity:1, duration:0.8, ease:"power3.out"});
-  gsap.fromTo(cakeGlow, {opacity:0}, {opacity:1, duration:1.2, ease:"power2.out"});
+  gsap.fromTo(cake,
+    { scale: 0.6, opacity: 0, y: 30 },
+    { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+  );
+  gsap.fromTo(cakeGlow,
+    { opacity: 0 },
+    { opacity: 1, duration: 1.2, ease: "power2.out" }
+  );
 
-  cakeAnim.goToAndPlay(0, true);
+  startFlameFlicker();
 }
 
 function extinguishCandles(){
-  gsap.to(cake, {opacity:0.6, duration:0.6});
-  gsap.to(cakeGlow, {opacity:0.3, duration:0.6});
+  stopFlameFlicker();
+
+  const flames = cake ? cake.querySelectorAll(".candle-flame") : [];
+  const smokes = cake ? cake.querySelectorAll(".candle-smoke") : [];
+
+  gsap.to(flames, { opacity: 0, duration: 0.4, ease: "power1.out" });
+
+  smokes.forEach((s, i) => {
+    gsap.fromTo(s,
+      { opacity: 0, y: 0 },
+      {
+        opacity: 0.9,
+        y: -20 - Math.random() * 20,
+        duration: 1.2 + Math.random() * 0.4,
+        ease: "power1.out",
+        onComplete: () => {
+          gsap.to(s, { opacity: 0, duration: 0.5 });
+        }
+      }
+    );
+  });
+
+  gsap.to(cakeGlow, { opacity: 0.3, duration: 0.6, ease: "power1.out" });
 }
 
 function hideCake(){
-  gsap.to(cake, {opacity:0, scale:0.6, duration:0.6});
-  gsap.to(cakeGlow, {opacity:0, duration:0.6});
-  cakeAnim.stop();
+  gsap.to(cake, { opacity: 0, scale: 0.6, duration: 0.6, ease: "power2.in" });
+  gsap.to(cakeGlow, { opacity: 0, duration: 0.6, ease: "power2.in" });
 }
 
 /* ------------------ COUNTDOWN ------------------ */
