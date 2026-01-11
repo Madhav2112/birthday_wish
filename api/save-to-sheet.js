@@ -8,6 +8,9 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
+    console.log("KEY START:", process.env.GOOGLE_PRIVATE_KEY.split("\n")[0]);
+    console.log("KEY END:", process.env.GOOGLE_PRIVATE_KEY.split("\n").slice(-2));
+
     console.log("BODY:", req.body);
 
     const body = req.body;
