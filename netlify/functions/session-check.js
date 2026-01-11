@@ -4,7 +4,8 @@ import { createClient } from "@netlify/blobs";
 export async function handler(event, context) {
   const { sessionId, module } = JSON.parse(event.body);
 
-  const client = createClient({ token: process.env.NETLIFY_BLOBS_TOKEN });
+  // ❗ No token needed inside Netlify Functions
+  const client = createClient();
   const store = client.store("sessions");
 
   let session = await store.get(sessionId, { type: "json" });
