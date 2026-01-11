@@ -3,22 +3,24 @@ export const config = {
     bodyParser: true,
   },
 };
-console.log("RAW KEY:", process.env.GOOGLE_PRIVATE_KEY);
+
 import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
-    console.log("KEY START:", process.env.GOOGLE_PRIVATE_KEY.split("\n")[0]);
-    console.log("KEY END:", process.env.GOOGLE_PRIVATE_KEY.split("\n").slice(-2));
+    // Reconstruct private key safely
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n");
 
-    console.log("BODY:", req.body);
+    console.log("KEY START:", privateKey.split("\n")[0]);
+    console.log("KEY END:", privateKey.split("\n").slice(-2));
 
     const body = req.body;
+    console.log("BODY:", body);
 
     const auth = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
       null,
-      process.env.GOOGLE_PRIVATE_KEY,
+      privateKey,
       ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
