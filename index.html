@@ -1161,7 +1161,7 @@ function updateSession(moduleName) {
     localStorage.setItem("sessionId", crypto.randomUUID());
   }
 
-  fetch("/.netlify/functions/session-check", {
+  fetch("/api/session-check", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1176,7 +1176,7 @@ const HER_NAME = "Jaisveen"; // change to her exact spelling
 function sendNotification(name, moduleName) {
   const isHer = name.toLowerCase() === HER_NAME.toLowerCase();
 
-  fetch("/.netlify/functions/notify", {
+  fetch("/api/notify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1186,7 +1186,6 @@ function sendNotification(name, moduleName) {
     })
   });
 }
-
 
 async function logIdentity(name) {
   const geo = await fetchGeoInfo();
@@ -1205,7 +1204,7 @@ async function logIdentity(name) {
   };
 
   // Save to Google Sheet
-  fetch("/.netlify/functions/save-to-sheet", {
+  fetch("/api/save-to-sheet", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -1216,7 +1215,7 @@ async function logIdentity(name) {
 
   // Send email ONLY if she is playing
   if (isHer) {
-    fetch("/.netlify/functions/notify", {
+    fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1232,6 +1231,7 @@ async function logIdentity(name) {
 
   return true;
 }
+
 /***********************
  * IDENTITY → GAME TRANSITION
  ***********************/

@@ -1,13 +1,13 @@
-const { google } = require("googleapis");
+import { google } from "googleapis";
 
-exports.handler = async (event) => {
+export default async function handler(req, res) {
   try {
-    const body = JSON.parse(event.body);
+    const body = req.body;
 
     const auth = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
       null,
-      process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      process.env.GOOGLE_PRIVATE_KEY,
       ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
@@ -33,15 +33,10 @@ exports.handler = async (event) => {
       }
     });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Saved to sheet" })
-    };
+    res.status(200).json({ message: "Saved to sheet" });
 
   } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message })
-    };
+    console.error("ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
-};
+}
