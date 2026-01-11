@@ -1,28 +1,8 @@
-// netlify/functions/save-to-sheet.js
-import { google } from "googleapis";
+const { google } = require("googleapis");
 
-export async function handler(event, context) {
+exports.handler = async (event) => {
   try {
-    // Validate request body
-    if (!event.body) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing request body" })
-      };
-    }
-
-    const {
-      timestamp,
-      name,
-      city,
-      region,
-      country,
-      isp,
-      deviceType,
-      browser,
-      screenSize,
-      fingerprint
-    } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
 
     const auth = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
@@ -36,19 +16,19 @@ export async function handler(event, context) {
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SHEET_ID,
       range: "Sheet1!A1",
-      valueInputOption: "USER_ENTERED",
+      valueInputOption: "RAW",
       requestBody: {
         values: [[
-          timestamp,
-          name,
-          city,
-          region,
-          country,
-          isp,
-          deviceType,
-          browser,
-          screenSize,
-          fingerprint
+          body.timestamp,
+          body.name,
+          body.city,
+          body.region,
+          body.country,
+          body.isp,
+          body.deviceType,
+          body.browser,
+          body.screenSize,
+          body.fingerprint
         ]]
       }
     });
@@ -64,4 +44,4 @@ export async function handler(event, context) {
       body: JSON.stringify({ error: err.message })
     };
   }
-}
+};

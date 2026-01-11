@@ -1,7 +1,6 @@
-// netlify/functions/notify.js
-import { Resend } from 'resend';
+const { Resend } = require("resend");
 
-export async function handler(event, context) {
+exports.handler = async (event) => {
   try {
     const { name, module, isHer } = JSON.parse(event.body);
 
@@ -17,7 +16,7 @@ export async function handler(event, context) {
 
     await resend.emails.send({
       from: "Game Notification <onboarding@resend.dev>",
-      to: "maddhav.taneja01@gmail.com", // <-- CHANGE THIS
+      to: "maddhav.taneja01@gmail.com",
       subject: `She played: ${name}`,
       html: `
         <h2>She just played!</h2>
@@ -38,4 +37,4 @@ export async function handler(event, context) {
       body: JSON.stringify({ error: err.message })
     };
   }
-}
+};
