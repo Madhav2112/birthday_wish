@@ -3,6 +3,14 @@ import { google } from "googleapis";
 
 export async function handler(event, context) {
   try {
+    // Validate request body
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing request body" })
+      };
+    }
+
     const {
       timestamp,
       name,
