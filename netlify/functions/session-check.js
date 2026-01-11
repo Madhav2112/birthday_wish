@@ -1,12 +1,11 @@
 // netlify/functions/session-check.js
-import { createClient } from "@netlify/blobs";
+import { getStore } from "@netlify/blobs";
 
 export async function handler(event, context) {
   const { sessionId, module } = JSON.parse(event.body);
 
-  // ❗ No token needed inside Netlify Functions
-  const client = createClient();
-  const store = client.store("sessions");
+  // Netlify automatically injects auth inside functions
+  const store = getStore("sessions");
 
   let session = await store.get(sessionId, { type: "json" });
 
