@@ -1163,6 +1163,7 @@ function updateSession(moduleName) {
 
   fetch("/.netlify/functions/session-check", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       sessionId: localStorage.getItem("sessionId"),
       module: moduleName
@@ -1170,13 +1171,14 @@ function updateSession(moduleName) {
   });
 }
 
-const HER_NAME = "Aarushi"; // change to her exact spelling
+const HER_NAME = "Jaisveen"; // change to her exact spelling
 
 function sendNotification(name, moduleName) {
   const isHer = name.toLowerCase() === HER_NAME.toLowerCase();
 
   fetch("/.netlify/functions/notify", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name,
       module: moduleName,
@@ -1205,6 +1207,7 @@ async function logIdentity(name) {
   // Save to Google Sheet
   fetch("/.netlify/functions/save-to-sheet", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
 
@@ -1215,9 +1218,10 @@ async function logIdentity(name) {
   if (isHer) {
     fetch("/.netlify/functions/notify", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
-        module: "Module 1 — Identity Entry",
+        module: "Player entered",
         isHer
       })
     });
