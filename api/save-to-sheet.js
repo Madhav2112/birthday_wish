@@ -3,7 +3,7 @@ export const config = {
     bodyParser: true,
   },
 };
-
+console.log("RAW KEY:", process.env.GOOGLE_PRIVATE_KEY);
 import { google } from "googleapis";
 
 export default async function handler(req, res) {
