@@ -1,7 +1,15 @@
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
+    console.log("BODY:", req.body);
+
     const body = req.body;
 
     const auth = new google.auth.JWT(
@@ -36,7 +44,7 @@ export default async function handler(req, res) {
     res.status(200).json({ message: "Saved to sheet" });
 
   } catch (err) {
-    console.error("ERROR:", err);
+    console.error("ERROR in save-to-sheet:", err);
     res.status(500).json({ error: err.message });
   }
 }

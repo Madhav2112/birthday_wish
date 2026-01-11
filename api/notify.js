@@ -1,7 +1,15 @@
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 import { Resend } from "resend";
 
 export default async function handler(req, res) {
   try {
+    console.log("BODY:", req.body);
+
     const { name, module, isHer } = req.body;
 
     if (!isHer) {
@@ -25,7 +33,7 @@ export default async function handler(req, res) {
     res.status(200).json({ message: "Email sent" });
 
   } catch (err) {
-    console.error("ERROR:", err);
+    console.error("ERROR in notify:", err);
     res.status(500).json({ error: err.message });
   }
 }
