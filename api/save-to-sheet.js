@@ -8,14 +8,7 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
-    // Reconstruct private key safely
     const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n");
-
-    console.log("KEY START:", privateKey.split("\n")[0]);
-    console.log("KEY END:", privateKey.split("\n").slice(-2));
-
-    const body = req.body;
-    console.log("BODY:", body);
 
     const auth = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
@@ -25,6 +18,8 @@ export default async function handler(req, res) {
     );
 
     const sheets = google.sheets({ version: "v4", auth });
+
+    const body = req.body;
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SHEET_ID,
