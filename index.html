@@ -1156,28 +1156,82 @@ async function fetchGeoInfo() {
     return { ip: null, city: null, region: null, country: null, isp: null };
   }
 }
+function updateSession(moduleName) {
+  if (!localStorage.getItem("sessionId")) {
+    localStorage.setItem("sessionId", crypto.randomUUID());
+  }
+
+  fetch("/.netlify/functions/session-check", {
+    method: "POST",
+    body: JSON.stringify({
+      sessionId: localStorage.getItem("sessionId"),
+      module: moduleName
+    })
+  });
+}
+
+function sendNotification(name, moduleName) {
+  fetch("/.netlify/functions/notify", {
+    method: "POST",
+    body: JSON.stringify({ name, module: moduleName })
+  });
+}
+
+async function savePlayerData(name) {
+  const geo = await fetchGeoInfo();
+
+  fetch("/.netlify/functions/save-to-sheet", {
+    method: "POST",
+    body: JSON.stringify({
+      timestamp: Date.now(),
+      name,
+      city: geo.city,
+      region: geo.region,
+      country: geo.country,
+      isp: geo.isp,
+      deviceType: getDeviceType(),
+      browser: getBrowserName(),
+      screenSize: screen.width + "x" + screen.height,
+      fingerprint: simpleFingerprintHash()
+    })
+  });
+}
 
 async function logIdentity(name) {
+  const geo = await fetchGeoInfo();
+
   const payload = {
-    name,
     timestamp: new Date().toISOString(),
+    name,
+    city: geo.city,
+    region: geo.region,
+    country: geo.country,
+    isp: geo.isp,
     deviceType: getDeviceType(),
     browser: getBrowserName(),
     screenSize: screen.width + "x" + screen.height,
-    fingerprint: simpleFingerprintHash(),
-    ...(await fetchGeoInfo())
+    fingerprint: simpleFingerprintHash()
   };
 
-  try {
-    const res = await fetch(LOG_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
+  // 1. Save to Google Sheet
+  fetch("/.netlify/functions/save-to-sheet", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  // 2. Send email notification
+  fetch("/.netlify/functions/notify", {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      module: "Module 1 — Identity Entry"
+    })
+  });
+
+  // 3. Update session
+  updateSession("Module 1");
+
+  return true;
 }
 
 /***********************
@@ -1195,11 +1249,9 @@ identityForm.addEventListener("submit", async (e) => {
   startButton.disabled = true;
   identityStatus.textContent = "Listening to the stars…";
 
-  const success = await logIdentity(name);
+  await logIdentity(name);
 
-  identityStatus.textContent = success
-    ? "The spirit remembers you."
-    : "The spirit remembers you in its own way.";
+identityStatus.textContent = "The spirit remembers you.";
 
   setTimeout(() => {
     startGameTransition();
