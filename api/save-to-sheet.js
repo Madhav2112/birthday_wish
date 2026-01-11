@@ -8,6 +8,8 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
+    console.log("HAS B64:", !!process.env.GOOGLE_PRIVATE_KEY_B64);
+
     // Decode the private key from base64 (Vercel-safe)
     const privateKey = Buffer.from(
       process.env.GOOGLE_PRIVATE_KEY_B64,
