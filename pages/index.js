@@ -1,10 +1,9 @@
 export default function Home() {
   return (
-    <>
-      <h1>Redirecting...</h1>
-      <script dangerouslySetInnerHTML={{
-        __html: `window.location.href = "/index.html";`
-      }} />
-    </>
+    <main>
+      <h1>Birthday Website</h1>
+      <p>Your Next.js API routes should now deploy.</p>
+      <a href="/index.html">Enter site →</a>
+    </main>
   );
 }
