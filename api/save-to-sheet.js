@@ -8,7 +8,11 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n");
+    // Decode the private key from base64 (Vercel-safe)
+    const privateKey = Buffer.from(
+      process.env.GOOGLE_PRIVATE_KEY_B64,
+      "base64"
+    ).toString("utf8");
 
     const auth = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
