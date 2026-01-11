@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     await resend.emails.send({
       from: "Game Notification <onboarding@resend.dev>",
-      to: "maddhav.taneja01@gmail.com",
+      to: "madhav.taneja01@gmail.com",
       subject: `She played: ${name}`,
       html: `
         <h2>She just played!</h2>
