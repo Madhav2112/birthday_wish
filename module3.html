@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title> Cosmic Forest Emoji Puzzles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- GSAP for animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+  <script>
+    gsap.registerPlugin(MotionPathPlugin);
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      color: #f7f3ff;
+      padding: 16px;
+      background:
+        radial-gradient(circle at top, #32104a 0, #0b0617 35%, #02040a 70%) fixed,
+        radial-gradient(circle at bottom, #082013 0, #020309 45%, #010106 80%) fixed;
+      background-blend-mode: screen;
+    }
+
+    .module-wrapper {
+      width: 100%;
+      max-width: 520px;
+      background: radial-gradient(circle at top left, rgba(36, 18, 70, 0.95), rgba(4, 10, 15, 0.96));
+      border-radius: 26px;
+      border: 1px solid rgba(199, 175, 255, 0.55);
+      box-shadow:
+        0 0 38px rgba(162, 124, 255, 0.55),
+        0 0 68px rgba(71, 196, 140, 0.22),
+        0 0 120px rgba(55, 119, 255, 0.25);
+      padding: 20px 20px 18px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+    }
+
+    /* Soft forest silhouettes at the bottom */
+    .forest-silhouette {
+      position: absolute;
+      inset: auto -10% -25px -10%;
+      background:
+        radial-gradient(circle at 10% 100%, rgba(0, 0, 0, 0.7) 0, transparent 55%),
+        radial-gradient(circle at 40% 100%, rgba(0, 0, 0, 0.8) 0, transparent 60%),
+        radial-gradient(circle at 70% 100%, rgba(0, 0, 0, 0.85) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.7) 0, transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient glow fog */
+    .cosmic-fog {
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(187, 133, 255, 0.32) 0, transparent 55%),
+        radial-gradient(circle at 80% 10%, rgba(129, 255, 187, 0.22) 0, transparent 55%),
+        radial-gradient(circle at 60% 60%, rgba(114, 178, 255, 0.18) 0, transparent 55%);
+      mix-blend-mode: screen;
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .module-inner {
+      position: relative;
+      z-index: 2;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+
+    .module-title {
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fbe9ff;
+    }
+
+    .chip {
+      font-size: 0.7rem;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, rgba(63, 147, 110, 0.3), rgba(18, 64, 43, 0.9));
+      border: 1px solid rgba(150, 231, 186, 0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #e9fff6;
+      white-space: nowrap;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(39, 23, 74, 0.9);
+      overflow: hidden;
+      margin-bottom: 14px;
+      border: 1px solid rgba(128, 100, 195, 0.7);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ffbdf4, #9af6ff, #d1ff9c);
+      box-shadow:
+        0 0 18px rgba(255, 201, 255, 0.9),
+        0 0 32px rgba(130, 250, 204, 0.9);
+      transition: width 0.35s ease-out;
+    }
+
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+      color: #dcd0ff;
+    }
+
+    .hud-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hud-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(149, 200, 169, 0.7);
+      background: rgba(14, 50, 35, 0.8);
+      font-size: 0.7rem;
+      color: #d5ffe6;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .emoji-bubble {
+      margin: 6px auto 6px;
+      width: 100%;
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 20% 0, rgba(210, 161, 255, 0.55), rgba(28, 9, 52, 0.95)),
+        radial-gradient(circle at 80% 120%, rgba(33, 112, 86, 0.88), rgba(10, 20, 24, 1));
+      border: 1px solid rgba(222, 189, 255, 0.7);
+      box-shadow:
+        0 0 24px rgba(194, 155, 255, 0.65),
+        0 0 42px rgba(71, 198, 146, 0.45),
+        inset 0 0 18px rgba(9, 3, 21, 0.95);
+      padding: 12px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .emoji-text {
+      font-size: 2.35rem;
+      line-height: 1.2;
+      text-shadow:
+        0 0 18px rgba(255, 255, 255, 0.6),
+        0 0 36px rgba(168, 244, 212, 0.8);
+    }
+
+    .firefly-orbit {
+      position: absolute;
+      inset: -10px;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.32;
+    }
+
+    .question-text {
+      margin-top: 10px;
+      font-size: 0.96rem;
+      text-align: center;
+      color: #f6ecff;
+    }
+
+    .sub-hint {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #c0f7d8;
+      opacity: 0.9;
+    }
+
+    .options-grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (min-width: 420px) {
+      .options-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .option-button {
+      border-radius: 999px;
+      border: 1px solid rgba(209, 183, 255, 0.7);
+      background:
+        radial-gradient(circle at top left, rgba(68, 42, 124, 0.9), rgba(16, 15, 32, 0.98));
+      color: #f5ebff;
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition:
+        transform 0.12s ease-out,
+        box-shadow 0.12s ease-out,
+        border-color 0.12s ease-out,
+        background 0.12s ease-out,
+        color 0.12s ease-out;
+      text-align: center;
+      min-height: 42px;
+    }
+
+    .option-button:hover,
+    .option-button:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      box-shadow:
+        0 0 18px rgba(175, 140, 255, 0.9),
+        0 0 40px rgba(86, 165, 255, 0.45);
+      border-color: rgba(245, 218, 255, 0.95);
+      background:
+        radial-gradient(circle at top left, rgba(99, 63, 173, 0.98), rgba(24, 21, 58, 1));
+    }
+
+    .option-button:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: none;
+    }
+
+    .option-button.correct {
+      background:
+        radial-gradient(circle at top, #47f2a9, #1a7c57);
+      border-color: #b5ffe4;
+      box-shadow:
+        0 0 22px rgba(169, 255, 215, 1),
+        0 0 46px rgba(88, 251, 200, 0.9);
+      color: #021812;
+    }
+
+    .option-button.wrong {
+      background:
+        radial-gradient(circle at top, #5a1430, #1b050d);
+      border-color: #ff9fb9;
+      box-shadow:
+        0 0 18px rgba(255, 159, 185, 0.9),
+        0 0 36px rgba(255, 102, 151, 0.75);
+      color: #fff1f5;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      min-height: 20px;
+      font-size: 0.82rem;
+      text-align: center;
+      color: #f4e3ff;
+      opacity: 0.98;
+    }
+
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: #b7a5ff;
+      opacity: 0.9;
+      gap: 10px;
+    }
+
+    .pill-soft {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(157, 196, 255, 0.6);
+      background: rgba(37, 82, 131, 0.32);
+      color: #e4f0ff;
+      white-space: nowrap;
+    }
+
+    #skipButton {
+      margin-top: 12px;
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(173, 227, 190, 0.9);
+      background:
+        radial-gradient(circle at top, rgba(46, 134, 98, 0.95), rgba(7, 32, 22, 1));
+      color: #eafff3;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: none;
+      box-shadow:
+        0 0 18px rgba(137, 242, 191, 0.9),
+        0 0 36px rgba(80, 204, 153, 0.7);
+      transition:
+        transform 0.14s ease-out,
+        box-shadow 0.14s ease-out,
+        background 0.14s ease-out;
+    }
+
+    #skipButton:hover {
+      transform: translateY(-1px);
+      background:
+        radial-gradient(circle at top, rgba(63, 173, 127, 1), rgba(10, 43, 29, 1));
+      box-shadow:
+        0 0 24px rgba(164, 255, 205, 1),
+        0 0 46px rgba(108, 227, 177, 0.9);
+    }
+
+    #skipButton:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: none;
+    }
+
+    .completion-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, rgba(56, 19, 94, 0.96), rgba(1, 5, 9, 0.98));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .completion-card {
+      text-align: center;
+      max-width: 340px;
+    }
+
+    .completion-title {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: #ffeaff;
+      text-shadow:
+        0 0 18px rgba(225, 184, 255, 0.9),
+        0 0 36px rgba(137, 214, 189, 0.8);
+    }
+
+    .completion-sub {
+      font-size: 0.9rem;
+      color: #d8caff;
+      margin-bottom: 16px;
+    }
+
+    .completion-button {
+      margin-top: 4px;
+      padding: 9px 18px;
+      font-size: 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(202, 181, 255, 0.9);
+      background:
+        radial-gradient(circle at top, #48316f, #14091f);
+      color: #fef7ff;
+      cursor: pointer;
+      box-shadow:
+        0 0 20px rgba(205, 172, 255, 0.95),
+        0 0 40px rgba(108, 190, 255, 0.7);
+      transition:
+        transform 0.12s ease-out,
+        box-shadow 0.12s ease-out,
+        background 0.12s ease-out;
+    }
+
+    .completion-button:hover {
+      transform: translateY(-1px);
+      background:
+        radial-gradient(circle at top, #5a3c85, #1a0d2c);
+    }
+
+    .completion-button:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: none;
+    }
+
+    .particle-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(0.4px);
+      mix-blend-mode: screen;
+    }
+  </style>
+</head>
+<body>
+  <div class="module-wrapper" id="moduleWrapper">
+    <div class="cosmic-fog"></div>
+    <div class="forest-silhouette"></div>
+    <div class="particle-layer" id="particleLayer"></div>
+
+    <div class="module-inner">
+      <div class="module-header">
+        <div class="module-title"> Cosmic Forest Emoji Puzzles</div>
+        <div class="chip">15 puzzles · skip unlocks at 10</div>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="hud-row">
+        <div id="hudRound">Puzzle 1 of 15</div>
+        <div class="hud-right">
+          <div id="hudCorrect">Correct: 0</div>
+          <div class="hud-pill">No timer · Just vibes</div>
+        </div>
+      </div>
+
+      <div class="emoji-bubble" id="emojiBubble">
+        <div class="emoji-text" id="emojiText">🐝 + 🍃</div>
+        <div class="firefly-orbit" id="orbitLayer"></div>
+      </div>
+
+      <div class="question-text" id="questionText">
+        Turn this emoji equation into a single word.
+      </div>
+      <div class="sub-hint" id="subHint">
+        Emojis replace parts of the word. Leftover letters stay as letters.
+      </div>
+
+      <div class="options-grid" id="optionsGrid"></div>
+
+      <div class="feedback" id="feedbackText"></div>
+
+      <button id="skipButton">Skip to next chapter (unlocked)</button>
+
+      <div class="footer-row">
+        <div class="pill-soft">Tip: Say it out loud like a spell</div>
+        <div>✨ Forest listens when you get it right</div>
+      </div>
+    </div>
+
+    <div class="completion-overlay" id="completionOverlay">
+      <div class="completion-card">
+        <div class="completion-title">You speak fluent forest‑emoji now.</div>
+        <div class="completion-sub">
+          Fifteen tiny riddles. Ten (or more) cracked wide open.  
+          The path ahead is glowing, just for you.
+        </div>
+        <button class="completion-button" id="nextModuleButton">
+          Continue the adventure
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     * CONFIG
+     ***********************/
+    const REQUIRED_FOR_SKIP = 10;
+    const NEXT_MODULE_URL = "module4.html"; // update when module 4 is wired
+
+    const moduleWrapper = document.getElementById("moduleWrapper");
+    const emojiBubble = document.getElementById("emojiBubble");
+    const emojiText = document.getElementById("emojiText");
+    const orbitLayer = document.getElementById("orbitLayer");
+    const questionText = document.getElementById("questionText");
+    const subHint = document.getElementById("subHint");
+    const optionsGrid = document.getElementById("optionsGrid");
+    const feedbackText = document.getElementById("feedbackText");
+    const hudRound = document.getElementById("hudRound");
+    const hudCorrect = document.getElementById("hudCorrect");
+    const progressFill = document.getElementById("progressFill");
+    const particleLayer = document.getElementById("particleLayer");
+    const skipButton = document.getElementById("skipButton");
+    const completionOverlay = document.getElementById("completionOverlay");
+    const nextModuleButton = document.getElementById("nextModuleButton");
+
+    let currentIndex = 0;
+    let correctCount = 0;
+    let isLocked = false;
+
+    /***********************
+     * PUZZLE DATA
+     ***********************/
+    const puzzles = [
+      {
+        emojis: "🐝 + 🍃",
+        question: "What word do these two parts create?",
+        hint: "Bee + leaf, spoken together.",
+        options: ["Relief", "Believe", "Belife"],
+        correct: "Believe"
+      },
+      {
+        emojis: "J + 🍳",
+        question: "Emoji replaces the second half of a country.",
+        hint: "J + pan.",
+        options: ["Jordan", "Japan", "Japania"],
+        correct: "Japan"
+      },
+      {
+        emojis: "🧊 + 👨",
+        question: "Both pieces are emojis, the word is a person.",
+        hint: "Ice + man.",
+        options: ["Snowman", "Coolman", "Iceman"],
+        correct: "Iceman"
+      },
+      {
+        emojis: "🌙 + 💡",
+        question: "Night sky + idea.",
+        hint: "Moon + light.",
+        options: ["Starlight", "Moonlight", "Nightlight"],
+        correct: "Moonlight"
+      },
+      {
+        emojis: "🔥 + 🪰",
+        question: "Fire + tiny insect.",
+        hint: "Fire + fly.",
+        options: ["Butterfly", "Firefly", "Hotfly"],
+        correct: "Firefly"
+      },
+      {
+        emojis: "🐠 + 👨",
+        question: "Fish + man.",
+        hint: "Think of someone who lives with nets.",
+        options: ["Aquaman", "Fisherman", "Waterman"],
+        correct: "Fisherman"
+      },
+      {
+        emojis: "🐝 + 🔛",
+        question: "Bee + on.",
+        hint: "Beyond what you can see.",
+        options: ["Belong", "Beyond", "Be on"],
+        correct: "Beyond"
+      },
+      {
+        emojis: "🌧️ + 🎀",
+        question: "Weather + bow.",
+        hint: "Classic sky moment after a storm.",
+        options: ["Rainbow", "Raincoat", "Bowstorm"],
+        correct: "Rainbow"
+      },
+      {
+        emojis: "🐝 + 🐝",
+        question: "Bee + bee.",
+        hint: "Be + be, said as one word.",
+        options: ["Bibi", "Baby", "Bebo"],
+        correct: "Baby"
+      },
+      {
+        emojis: "🌙 + 🌞",
+        question: "Moon + sun.",
+        hint: "Mon + sun, said together.",
+        options: ["Season", "Monsoon", "Sunrise"],
+        correct: "Monsoon"
+      },
+      {
+        emojis: "🐝 + 🍯",
+        question: "Bee + honey.",
+        hint: "The insect plus its favorite food.",
+        options: ["Beehoney", "Honeybee", "Beehive"],
+        correct: "Honeybee"
+      },
+      {
+        emojis: "🐝 + 🌊",
+        question: "Bee + wave.",
+        hint: "Be + have, pronounced smoothly.",
+        options: ["Be wave", "Behave", "Believe"],
+        correct: "Behave"
+      },
+      {
+        emojis: "🧊 + a",
+        question: "Cube + a.",
+        hint: "Sounds like a Caribbean country.",
+        options: ["Cubar", "Cuba", "Cubae"],
+        correct: "Cuba"
+      },
+      {
+        emojis: "🌙 + ster",
+        question: "Moon + ster.",
+        hint: "Mon + ster, said quickly.",
+        options: ["Moonster", "Monster", "Mister"],
+        correct: "Monster"
+      },
+      {
+        emojis: "🐝 + gin",
+        question: "Bee + gin.",
+        hint: "Be + gin, the start of something.",
+        options: ["Beginner", "Begin", "Began"],
+        correct: "Begin"
+      }
+    ];
+
+    /***********************
+     * INIT
+     ***********************/
+    function initModule() {
+      gsap.fromTo(
+        moduleWrapper,
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }
+      );
+      createAmbientFireflies();
+      loadPuzzle();
+      updateHud();
+    }
+
+    function updateHud() {
+      hudRound.textContent = `Puzzle ${currentIndex + 1} of ${puzzles.length}`;
+      hudCorrect.textContent = `Correct: ${correctCount}`;
+      const pct = Math.min((correctCount / REQUIRED_FOR_SKIP) * 100, 100);
+      progressFill.style.width = pct + "%";
+    }
+
+    /***********************
+     * PUZZLE RENDERING
+     ***********************/
+    function loadPuzzle() {
+      const puzzle = puzzles[currentIndex];
+
+      feedbackText.textContent = "";
+      optionsGrid.innerHTML = "";
+
+      emojiText.textContent = puzzle.emojis;
+      questionText.textContent = puzzle.question;
+      subHint.textContent = puzzle.hint;
+
+      animateBubbleIn();
+      buildOrbitFireflies();
+
+      puzzle.options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "option-button";
+        btn.textContent = option;
+        btn.addEventListener("click", () => handleAnswer(option));
+        optionsGrid.appendChild(btn);
+      });
+
+      gsap.fromTo(
+        ".option-button",
+        { opacity: 0, y: 8 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.35,
+          ease: "power2.out",
+          stagger: 0.05
+        }
+      );
+
+      isLocked = false;
+      updateHud();
+    }
+
+    function animateBubbleIn() {
+      gsap.fromTo(
+        emojiBubble,
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.5)" }
+      );
+    }
+
+    /***********************
+     * ANSWER HANDLING
+     ***********************/
+    function handleAnswer(selected) {
+      if (isLocked) return;
+      isLocked = true;
+
+      const puzzle = puzzles[currentIndex];
+      const buttons = Array.from(
+        optionsGrid.querySelectorAll(".option-button")
+      );
+      const clickedBtn = buttons.find(btn => btn.textContent === selected);
+
+      if (selected === puzzle.correct) {
+        correctCount++;
+        feedbackText.textContent =
+          "Yes. The forest heard that click — that was the right spell.";
+        clickedBtn.classList.add("correct");
+        animateCorrect(clickedBtn);
+      } else {
+        feedbackText.textContent =
+          "Not quite. Listen to the emojis out loud on the next one.";
+        clickedBtn.classList.add("wrong");
+        animateWrong();
+      }
+
+      updateHud();
+      maybeUnlockSkip();
+
+      setTimeout(() => {
+        currentIndex++;
+        if (currentIndex >= puzzles.length) {
+          currentIndex = 0; // loop back so they can keep playing
+        }
+        loadPuzzle();
+      }, 1150);
+    }
+
+    function maybeUnlockSkip() {
+      if (correctCount >= REQUIRED_FOR_SKIP) {
+        if (skipButton.style.display !== "block") {
+          skipButton.style.display = "block";
+          gsap.fromTo(
+            skipButton,
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }
+          );
+        }
+      }
+    }
+
+    /***********************
+     * ANIMATIONS
+     ***********************/
+    function animateCorrect(button) {
+      gsap.fromTo(
+        button,
+        { scale: 1 },
+        { scale: 1.06, yoyo: true, repeat: 1, duration: 0.16 }
+      );
+      triggerSparklesAround(emojiBubble);
+    }
+
+    function animateWrong() {
+      gsap.fromTo(
+        moduleWrapper,
+        { x: -5 },
+        { x: 0, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 3 }
+      );
+    }
+
+    function triggerSparklesAround(targetEl) {
+      const rect = targetEl.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const count = 18;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        particleLayer.appendChild(p);
+
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const distance = 40 + Math.random() * 30;
+
+        const layerRect = particleLayer.getBoundingClientRect();
+        const startX = centerX - layerRect.left;
+        const startY = centerY - layerRect.top;
+        const endX = startX + Math.cos(angle) * distance;
+        const endY = startY + Math.sin(angle) * distance;
+
+        gsap.set(p, {
+          x: startX,
+          y: startY,
+          scale: 0.7 + Math.random() * 0.5,
+          background:
+            "radial-gradient(circle, rgba(255,255,255,1), rgba(199,162,255,0.9), transparent)"
+        });
+
+        gsap.to(p, {
+          x: endX,
+          y: endY,
+          opacity: 0,
+          scale: 0.2,
+          duration: 0.9 + Math.random() * 0.4,
+          ease: "power2.out",
+          onComplete: () => p.remove()
+        });
+      }
+    }
+
+    function createAmbientFireflies() {
+      const count = 26;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        particleLayer.appendChild(p);
+
+        const size = 3 + Math.random() * 4;
+        gsap.set(p, {
+          width: size,
+          height: size,
+          borderRadius: "999px",
+          background:
+            Math.random() > 0.5
+              ? "radial-gradient(circle, rgba(188,255,210,1), rgba(120,255,189,0.7), transparent)"
+              : "radial-gradient(circle, rgba(210,176,255,1), rgba(143,196,255,0.8), transparent)",
+          x: Math.random() * particleLayer.clientWidth,
+          y: Math.random() * particleLayer.clientHeight,
+          opacity: 0
+        });
+
+        const floatDuration = 12 + Math.random() * 8;
+
+        gsap.to(p, {
+          y: "-=" + (20 + Math.random() * 40),
+          x: "+=" + (Math.random() * 60 - 30),
+          duration: floatDuration,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true
+        });
+
+        gsap.to(p, {
+          opacity: 0.1 + Math.random() * 0.6,
+          duration: 3 + Math.random() * 3,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true
+        });
+      }
+    }
+
+    function buildOrbitFireflies() {
+      orbitLayer.innerHTML = "";
+      const rect = emojiBubble.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+
+      const count = 10;
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement("div");
+        dot.className = "particle";
+        orbitLayer.appendChild(dot);
+
+        const size = 3 + Math.random() * 3;
+        gsap.set(dot, {
+          width: size,
+          height: size,
+          borderRadius: "999px",
+          background:
+            "radial-gradient(circle, rgba(196,255,223,1), rgba(139,245,203,0.7), transparent)"
+        });
+
+        const angleStart = Math.random() * Math.PI * 2;
+        const radius = (Math.min(width, height) / 2) * (0.65 + Math.random() * 0.18);
+        const duration = 6 + Math.random() * 4;
+        const delay = Math.random() * 4;
+
+        gsap.to(dot, {
+          motionPath: {
+            path: function() {
+              const points = [];
+              const loops = 1;
+              const segments = 80;
+              for (let j = 0; j <= segments; j++) {
+                const t = (j / segments) * Math.PI * 2 * loops + angleStart;
+                const x = width / 2 + Math.cos(t) * radius;
+                const y = height / 2 + Math.sin(t) * (radius * 0.6);
+                points.push({ x, y });
+              }
+              return points;
+            },
+            curviness: 1.2,
+            autoRotate: false
+          },
+          duration,
+          ease: "none",
+          repeat: -1,
+          delay
+        });
+
+        gsap.fromTo(
+          dot,
+          { opacity: 0 },
+          {
+            opacity: 0.4 + Math.random() * 0.4,
+            duration: 1.8 + Math.random() * 1.5,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+          }
+        );
+      }
+    }
+
+    /***********************
+     * COMPLETION / SKIP
+     ***********************/
+    skipButton.addEventListener("click", () => {
+      showCompletion();
+    });
+
+    function showCompletion() {
+      completionOverlay.style.pointerEvents = "auto";
+      gsap.to(completionOverlay, {
+        opacity: 1,
+        duration: 0.7,
+        ease: "power2.out"
+      });
+    }
+
+    nextModuleButton.addEventListener("click", () => {
+      gsap.to(moduleWrapper, {
+        opacity: 0,
+        y: -14,
+        duration: 0.6,
+        ease: "power2.in",
+        onComplete: () => {
+          window.location.href = NEXT_MODULE_URL;
+        }
+      });
+    });
+
+    initModule();
+  </script>
+</body>
+</html>
+

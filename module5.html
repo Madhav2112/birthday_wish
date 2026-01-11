@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Cosmic Birthday</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- REQUIRED LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #050514;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* Layout */
+.container {
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  background:
+    radial-gradient(circle at 20% 0, rgba(140,70,255,0.25) 0, transparent 55%),
+    radial-gradient(circle at 80% 0, rgba(0,196,255,0.25) 0, transparent 55%);
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  text-shadow: 0 0 14px rgba(186,134,255,0.9);
+  transition: opacity 0.6s ease;
+}
+
+/* Box Area */
+.box-area {
+  position: relative;
+  width: 520px;
+  height: 220px;
+}
+
+.gift-box {
+  width: 140px;
+  height: 120px;
+  cursor: pointer;
+  position: absolute;
+  bottom: 20px;
+  transition: left 0.45s ease, bottom 0.45s ease;
+}
+
+.gift-box.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+#box1 { left: 0; }
+#box2 { left: 190px; }
+#box3 { left: 380px; }
+
+.base {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #3a1a6f, #1b0f3b);
+  border: 2px solid rgba(255,185,255,0.9);
+  box-shadow: inset 0 6px 12px rgba(0,0,0,0.45), 0 10px 18px rgba(0,0,0,0.7);
+}
+
+.base::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 20%; height: 100%;
+  background: linear-gradient(180deg, #ff9ad9, #ffc5f0);
+}
+
+.base::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 0;
+  transform: translateY(-50%);
+  width: 100%; height: 15%;
+  background: linear-gradient(90deg, #ff9ad9, #ffd4ff);
+}
+
+.lid {
+  position: absolute;
+  top: -26px; left: -4px;
+  width: calc(100% + 8px);
+  height: 32px;
+  border-radius: 18px 18px 10px 10px;
+  background: linear-gradient(135deg, #f4d6ff, #7f5dff);
+  border: 2px solid rgba(255,210,255,1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+  transition: transform 0.6s ease;
+  z-index: 10;
+}
+
+/* ORB */
+.orb-ball {
+  font-size: 2.4rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: transform 0.6s ease, opacity 0.4s ease;
+  filter: drop-shadow(0 0 12px rgba(255,150,255,0.9));
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Correct Glow */
+.correct-glow {
+  animation: correctGlow 1s ease-out;
+}
+@keyframes correctGlow {
+  0% { box-shadow: 0 0 0px #7fff9f; }
+  50% { box-shadow: 0 0 28px #7fff9f; }
+  100% { box-shadow: 0 0 0px #7fff9f; }
+}
+
+/* Wrong Shake */
+.wrong-shake {
+  animation: wrongShake 0.55s ease;
+  background: rgba(255,0,0,0.15);
+}
+@keyframes wrongShake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(8px); }
+  100% { transform: translateX(0); }
+}
+
+/* Round 1 feedback text */
+#correctText, #wrongText {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.4rem;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 9999;
+}
+#correctText { text-shadow: 0 0 18px #7fff9f; }
+#wrongText   { text-shadow: 0 0 18px #ff7b7b; }
+
+/* Round 2 text */
+#round2Text {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.6rem;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  text-shadow: 0 0 18px #9f7bff;
+  z-index: 9999;
+}
+
+/* Sparkle container */
+#sparkleContainer {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+  z-index: 99999;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+/* CAKE CONTAINER (empty until Part 2 loads animation) */
+#cake {
+  position: fixed;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%) scale(0.8);
+  width: 340px;
+  height: 340px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  filter: drop-shadow(0 0 35px rgba(255,120,255,0.6))
+          drop-shadow(0 0 55px rgba(255,150,255,0.4));
+}
+
+/* Cake aura glow */
+#cakeGlow {
+  position: fixed;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,120,255,0.45), rgba(0,0,0,0));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  filter: blur(50px);
+}
+
+/* Countdown */
+.countdown {
+  position: fixed;
+  top: calc(15% - 15px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #ff9dff;
+  text-shadow: 0 0 18px #ff4fd8;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 9999;
+}
+
+/* Birthday text */
+.happy-birthday {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  text-shadow: 0 0 22px #ff7bff;
+  z-index: 9999;
+}
+
+.happy-birthday.visible { opacity: 1; }
+
+/* Final message */
+.final-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  text-align: center;
+  width: 80%;
+  line-height: 1.4;
+  z-index: 9999;
+}
+
+
+.final-message.visible { opacity: 1; }
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  opacity: 1;
+  transition: transform 1.4s ease-out, opacity 1.4s ease-out;
+  z-index: 99999;
+}
+.happy-birthday {
+  text-shadow:
+    0 0 18px #ff7bff,
+    0 0 28px #ff4fd8,
+    0 0 40px rgba(255,120,255,0.6);
+}
+.pre-count-text {
+  position: fixed;
+  top: calc(15% - 55px);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  color: #ffb7ff;
+  text-shadow: 0 0 14px #ff6bff;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 9999;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Sparkles -->
+<div id="sparkleContainer"></div>
+
+<!-- Round 1 feedback -->
+<div id="correctText">Yay! You got it right!</div>
+<div id="wrongText">Try again next round!</div>
+
+<!-- Round 2 text -->
+<div id="round2Text">Round 2 Begins!</div>
+
+<!-- Cake aura -->
+<div id="cakeGlow"></div>
+
+<!-- Cake animation container -->
+<div id="cake"></div>
+
+<div class="container">
+
+<div class="title">Find the Cosmic Orb</div>
+
+<div class="box-area">
+
+  <div class="gift-box" id="box1">
+    <div class="base"></div>
+    <div class="lid"></div>
+  </div>
+
+  <div class="gift-box" id="box2">
+    <div class="orb-ball" id="orbBall">🔮</div>
+    <div class="base"></div>
+    <div class="lid" id="middleLid"></div>
+  </div>
+
+  <div class="gift-box" id="box3">
+    <div class="base"></div>
+    <div class="lid"></div>
+  </div>
+
+</div>
+
+<div class="countdown"></div>
+<div class="pre-count-text">Take a deep breath… and make a wish in</div>
+</div> <!-- container -->
+<script>
+/* ------------------ UTIL ------------------ */
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ------------------ ELEMENTS ------------------ */
+const box1 = document.getElementById("box1");
+const box2 = document.getElementById("box2");
+const box3 = document.getElementById("box3");
+const middleLid = document.getElementById("middleLid");
+const orbBall = document.getElementById("orbBall");
+const titleEl = document.querySelector(".title");
+const cake = document.getElementById("cake");
+const cakeGlow = document.getElementById("cakeGlow");
+
+const boxes = [box1, box2, box3];
+const slotX = [0, 190, 380];
+
+let lastSwap = -1;
+let shuffleDone = false;
+let finalTriggered = false;
+
+let currentRound = 1;
+let correctBox = 2;
+
+/* ------------------ SOUNDS ------------------ */
+const s_correct = new Howl({ src: ["https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"] });
+const s_wrong   = new Howl({ src: ["https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"] });
+const s_round2  = new Howl({ src: ["https://assets.mixkit.co/sfx/preview/mixkit-magical-portal-2320.mp3"] });
+
+/* ------------------ SPARKLES (still Lottie) ------------------ */
+let sparkleAnim = lottie.loadAnimation({
+  container: document.getElementById("sparkleContainer"),
+  renderer: "svg",
+  loop: false,
+  autoplay: false,
+  path: "https://lottie.host/3f4c8e8f-9d3e-4c3e-9e2c-3e3f0e3c2c9d/0Qkz8Y.json"
+});
+
+function playSparkle(x, y){
+  const cont = document.getElementById("sparkleContainer");
+  cont.style.left = x + "px";
+  cont.style.top = y + "px";
+  cont.style.opacity = "1";
+
+  sparkleAnim.stop();
+  sparkleAnim.play();
+
+  setTimeout(()=> cont.style.opacity = "0", 600);
+}
+
+/* ------------------ COSMIC CAKE (SVG + GSAP) ------------------ */
+let cakeBuilt = false;
+let flameTweens = [];
+
+function buildCakeSvg(){
+  if (cakeBuilt || !cake) return;
+  cakeBuilt = true;
+
+  cake.innerHTML = `
+    <svg viewBox="0 0 200 220" width="100%" height="100%">
+      <!-- Plate -->
+      <ellipse cx="100" cy="190" rx="70" ry="14" fill="#1a0828" opacity="0.9" />
+      <ellipse cx="100" cy="192" rx="80" ry="18" fill="rgba(0,0,0,0.65)" />
+
+      <!-- Bottom layer -->
+      <rect x="35" y="130" width="130" height="40" rx="14" fill="#3b145f" />
+      <rect x="35" y="130" width="130" height="16" rx="10"
+            fill="url(#bottomIcing)" />
+
+      <!-- Middle layer -->
+      <rect x="45" y="100" width="110" height="32" rx="12" fill="#662066" />
+      <rect x="45" y="100" width="110" height="14" rx="9"
+            fill="url(#midIcing)" />
+
+      <!-- Top layer -->
+      <rect x="60" y="78" width="80" height="28" rx="12" fill="#8b2c8f" />
+      <rect x="60" y="78" width="80" height="12" rx="8"
+            fill="url(#topIcing)" />
+
+      <!-- Little sprinkles -->
+      <circle cx="75" cy="90" r="2" fill="#ffd6ff" />
+      <circle cx="100" cy="86" r="2.3" fill="#ffb3ff" />
+      <circle cx="125" cy="92" r="2" fill="#ffe0ff" />
+      <circle cx="92" cy="104" r="2" fill="#ffc8ff" />
+      <circle cx="112" cy="106" r="2" fill="#ffd6ff" />
+
+      <!-- Candles -->
+      <g class="candle" transform="translate(80,70)">
+        <rect x="0" y="0" width="8" height="22" rx="3" fill="#fbe7ff" />
+        <rect x="1" y="2" width="6" height="18" rx="3" fill="#ff9ad9" />
+        <!-- Flame -->
+        <ellipse class="candle-flame" cx="4" cy="-6" rx="3" ry="7"
+                 fill="url(#flameGrad)" />
+        <!-- Smoke seed -->
+        <circle class="candle-smoke" cx="4" cy="-10" r="3"
+                fill="rgba(200,200,255,0.5)" opacity="0" />
+      </g>
+
+      <g class="candle" transform="translate(100,66)">
+        <rect x="0" y="0" width="8" height="22" rx="3" fill="#fbe7ff" />
+        <rect x="1" y="2" width="6" height="18" rx="3" fill="#ffb3ff" />
+        <ellipse class="candle-flame" cx="4" cy="-6" rx="3" ry="7"
+                 fill="url(#flameGrad)" />
+        <circle class="candle-smoke" cx="4" cy="-10" r="3"
+                fill="rgba(200,200,255,0.5)" opacity="0" />
+      </g>
+
+      <g class="candle" transform="translate(120,70)">
+        <rect x="0" y="0" width="8" height="22" rx="3" fill="#fbe7ff" />
+        <rect x="1" y="2" width="6" height="18" rx="3" fill="#ff7bd9" />
+        <ellipse class="candle-flame" cx="4" cy="-6" rx="3" ry="7"
+                 fill="url(#flameGrad)" />
+        <circle class="candle-smoke" cx="4" cy="-10" r="3"
+                fill="rgba(200,200,255,0.5)" opacity="0" />
+      </g>
+
+      <!-- Cosmic halo behind cake -->
+      <radialGradient id="haloGrad" cx="50%" cy="30%" r="60%">
+        <stop offset="0%" stop-color="rgba(255,140,255,0.95)" />
+        <stop offset="40%" stop-color="rgba(160,80,255,0.7)" />
+        <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+      </radialGradient>
+      <circle cx="100" cy="110" r="85" fill="url(#haloGrad)" opacity="0.7" />
+
+      <!-- Icing gradients -->
+      <linearGradient id="bottomIcing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ff9ad9" />
+        <stop offset="50%" stop-color="#ffd4ff" />
+        <stop offset="100%" stop-color="#ffb3ff" />
+      </linearGradient>
+      <linearGradient id="midIcing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ffb0ff" />
+        <stop offset="100%" stop-color="#ffe6ff" />
+      </linearGradient>
+      <linearGradient id="topIcing" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ffe0ff" />
+        <stop offset="100%" stop-color="#ffffff" />
+      </linearGradient>
+
+      <!-- Flame gradient -->
+      <radialGradient id="flameGrad" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#ffffcc" />
+        <stop offset="45%" stop-color="#ffdd88" />
+        <stop offset="80%" stop-color="#ff7bd9" />
+        <stop offset="100%" stop-color="rgba(150,0,200,0.0)" />
+      </radialGradient>
+    </svg>
+  `;
+}
+function showPreCountText(){
+  const pct = document.querySelector(".pre-count-text");
+  pct.style.opacity = "1";
+  setTimeout(() => pct.style.opacity = "0", 1200);
+}
+function startFlameFlicker(){
+  flameTweens.forEach(t => t.kill());
+  flameTweens = [];
+  const flames = cake ? cake.querySelectorAll(".candle-flame") : [];
+  flames.forEach(f => {
+    const t = gsap.to(f, {
+      opacity: 0.35 + Math.random() * 0.4,
+      y: "-=2",
+      duration: 0.25 + Math.random() * 0.25,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+    flameTweens.push(t);
+  });
+}
+
+function stopFlameFlicker(){
+  flameTweens.forEach(t => t.kill());
+  flameTweens = [];
+}
+
+/* ------------------ APPLY POSITIONS ------------------ */
+function applyPositions() {
+  boxes.forEach((box, index) => {
+    box.style.left = slotX[index] + "px";
+  });
+}
+applyPositions();
+
+/* ------------------ ORIGINAL ORB ANIMATION (EXACT) ------------------ */
+async function playOrbAnimation(){
+  await wait(250);
+  middleLid.style.transform = "translateY(-90px)";
+  await wait(600);
+
+  orbBall.style.opacity = "1";
+  orbBall.style.zIndex = "0";
+  orbBall.style.transform = "translateX(-50%) translateY(80px)";
+  await wait(200);
+
+  orbBall.style.transform = "translateX(-50%) translateY(-40px)";
+  await wait(800);
+
+  orbBall.style.transform = "translateX(-50%) translateY(80px)";
+  await wait(700);
+
+  orbBall.style.opacity = "0";
+  middleLid.style.transform = "translateY(0)";
+  await wait(600);
+}
+
+/* ------------------ INITIAL START ------------------ */
+(async function(){
+  await playOrbAnimation();
+  if (titleEl) titleEl.style.opacity = "0";
+  startShuffle();
+})();
+
+/* ------------------ ORIGINAL SHUFFLE ------------------ */
+function startShuffle() {
+  shuffleDone = false;
+  let swaps = 0;
+  const maxSwaps = 5;
+  const arcHeight = 120;
+
+  function doSwap() {
+    if (swaps >= maxSwaps) {
+      enableClicks();
+      return;
+    }
+
+    let i;
+    do {
+      i = Math.random() < 0.5 ? 0 : 1;
+    } while (i === lastSwap);
+    lastSwap = i;
+
+    const j = i + 1;
+    const boxA = boxes[i];
+    const boxB = boxes[j];
+    const dx = slotX[j] - slotX[i];
+
+    boxA.style.transition = "none";
+    boxB.style.transition = "none";
+    boxA.style.transform = "translate(0,0)";
+    boxB.style.transform = "translate(0,0)";
+    void boxA.offsetWidth;
+
+    boxA.style.transition = "transform 0.4s cubic-bezier(0.45,-0.3,0.55,1.3)";
+    boxB.style.transition = "transform 0.4s cubic-bezier(0.45,-0.3,0.55,1.3)";
+    boxA.style.transform = `translate(0,-${arcHeight}px)`;
+    boxB.style.transform = `translate(0,${arcHeight}px)`;
+
+    setTimeout(() => {
+      boxA.style.transform = `translate(${dx}px,0)`;
+      boxB.style.transform = `translate(${-dx}px,0)`;
+
+      setTimeout(() => {
+        [boxes[i], boxes[j]] = [boxes[j], boxes[i]];
+        boxes.forEach((box, index) => {
+          box.style.transition = "none";
+          box.style.transform = "translate(0,0)";
+          box.style.left = slotX[index] + "px";
+        });
+        swaps++;
+        setTimeout(doSwap, 200);
+      }, 400);
+    }, 400);
+  }
+
+  doSwap();
+}
+
+function enableClicks() {
+  shuffleDone = true;
+  boxes.forEach(box => box.classList.remove("disabled"));
+}
+
+/* ------------------ CLICK HANDLING ------------------ */
+box1.onclick = () => handleBoxClick(1);
+box2.onclick = () => handleBoxClick(2);
+box3.onclick = () => handleBoxClick(3);
+
+async function handleBoxClick(n){
+  if(!shuffleDone || finalTriggered) return;
+  finalTriggered = true;
+
+  if(currentRound === 1){
+    await handleRound1(n);
+  } else {
+    await triggerFinal(n);
+  }
+}
+
+/* ------------------ ROUND 1 ------------------ */
+async function handleRound1(n){
+  const clicked = document.getElementById("box" + n);
+  const lid = clicked.querySelector(".lid");
+
+  lid.style.transform = "translateY(-90px)";
+  await wait(600);
+
+  if(n === correctBox){
+
+    orbBall.style.opacity = "1";
+    orbBall.style.transform = "translateX(-50%) translateY(-40px)";
+
+    clicked.classList.add("correct-glow");
+
+    const correctText = document.getElementById("correctText");
+    correctText.style.opacity = "1";
+    setTimeout(()=> correctText.style.opacity = "0", 1500);
+
+    const rect = clicked.getBoundingClientRect();
+    playSparkle(rect.left + rect.width/2, rect.top + rect.height/2);
+
+    s_correct.play();
+    await wait(900);
+
+  } else {
+
+    clicked.classList.add("wrong-shake");
+
+    const wrongText = document.getElementById("wrongText");
+    wrongText.style.opacity = "1";
+    setTimeout(()=> wrongText.style.opacity = "0", 1500);
+
+    s_wrong.play();
+    await wait(900);
+  }
+
+  document.querySelector(".box-area").style.display = "none";
+
+  const r2 = document.getElementById("round2Text");
+  r2.style.opacity = "1";
+  s_round2.play();
+
+  await wait(2000);
+  r2.style.opacity = "0";
+
+  currentRound = 2;
+  finalTriggered = false;
+
+  document.querySelector(".box-area").style.display = "flex";
+
+  boxes.forEach(b => {
+    b.querySelector(".lid").style.transform = "translateY(0)";
+    b.classList.remove("correct-glow","wrong-shake");
+  });
+
+  await playOrbAnimation();
+  startShuffle();
+}
+
+/* ------------------ ROUND 2 (CAKE) ------------------ */
+async function triggerFinal(n){
+  const clicked = document.getElementById("box" + n);
+  const lid = clicked.querySelector(".lid");
+
+  lid.style.transform = "translateY(-90px)";
+  await wait(600);
+
+  orbBall.style.opacity = "0";
+
+  document.querySelector(".box-area").style.display = "none";
+
+  showBlowText();
+  showCake();
+  showPreCountText();
+  runCountdown();
+
+  await wait(3000);
+  await wait(300);
+  extinguishCandles();
+  await wait(2000);
+  hideCake();
+  await wait(600);
+  showBirthday();
+  await wait(4000);
+  showMessage();
+}
+
+/* ------------------ BLOW TEXT ------------------ */
+const blowText = document.createElement("div");
+blowText.className = "blow-text";
+blowText.innerText = "Take a deep breath… and make a wish in....";
+document.body.appendChild(blowText);
+
+function showBlowText(){
+  blowText.style.opacity = "1";
+  blowText.style.textShadow = "0 0 18px #ff7bff";
+  setTimeout(()=> blowText.style.opacity = "0", 1200);
+}
+
+/* ------------------ CAKE CONTROL (SVG + GSAP) ------------------ */
+function showCake(){
+  buildCakeSvg();
+
+  cake.style.opacity = "1";
+  cakeGlow.style.opacity = "1";
+
+  gsap.fromTo(cake,
+    { scale: 0.6, opacity: 0, y: 30 },
+    { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+  );
+  gsap.fromTo(cakeGlow,
+    { opacity: 0 },
+    { opacity: 1, duration: 1.2, ease: "power2.out" }
+  );
+
+  startFlameFlicker();
+}
+
+function extinguishCandles(){
+  stopFlameFlicker();
+
+  const flames = cake ? cake.querySelectorAll(".candle-flame") : [];
+  const smokes = cake ? cake.querySelectorAll(".candle-smoke") : [];
+
+  gsap.to(flames, { opacity: 0, duration: 0.4, ease: "power1.out" });
+
+  smokes.forEach((s, i) => {
+    gsap.fromTo(s,
+      { opacity: 0, y: 0 },
+      {
+        opacity: 0.9,
+        y: -20 - Math.random() * 20,
+        duration: 1.2 + Math.random() * 0.4,
+        ease: "power1.out",
+        onComplete: () => {
+          gsap.to(s, { opacity: 0, duration: 0.5 });
+        }
+      }
+    );
+  });
+
+  gsap.to(cakeGlow, { opacity: 0.3, duration: 0.6, ease: "power1.out" });
+}
+
+function hideCake(){
+  gsap.to(cake, { opacity: 0, scale: 0.6, duration: 0.6, ease: "power2.in" });
+  gsap.to(cakeGlow, { opacity: 0, duration: 0.6, ease: "power2.in" });
+}
+
+/* ------------------ COUNTDOWN ------------------ */
+const countdown = document.createElement("div");
+countdown.className = "countdown";
+document.body.appendChild(countdown);
+
+async function runCountdown(){
+  const seq = ["3","2","1"];
+  for(const n of seq){
+    countdown.innerText = n;
+    countdown.style.opacity = "1";
+    await wait(800);
+    countdown.style.opacity = "0";
+    await wait(200);
+  }
+}
+
+/* ------------------ HAPPY BIRTHDAY ------------------ */
+const hb = document.createElement("div");
+hb.className = "happy-birthday";
+hb.innerText = "HAPPY BIRTHDAY!";
+document.body.appendChild(hb);
+
+function showBirthday(){
+  hb.style.opacity = "0";
+  hb.style.transform = "translate(-50%, -50%) scale(0.6)";
+  hb.classList.add("visible");
+
+  // Confetti first
+  spawnCenterConfetti(160);
+
+  // Then pop the text in the middle
+  gsap.to(hb, {
+    opacity: 1,
+    scale: 1,
+    duration: 0.8,
+    ease: "back.out(1.8)"
+  });
+}
+
+/* ------------------ FINAL MESSAGE ------------------ */
+const msg = document.createElement("div");
+msg.className = "final-message";
+msg.innerHTML = "Your message goes here — add anything you want!";
+document.body.appendChild(msg);
+
+function showMessage(){
+  // Hide the Happy Birthday text
+  hb.classList.remove("visible");
+  hb.style.opacity = "0";
+
+  // Show the final message
+  msg.classList.add("visible");
+}
+/* ------------------ CONFETTI ------------------ */
+function spawnCenterConfetti(count){
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+
+  for(let i = 0; i < count; i++){
+    const c = document.createElement("div");
+    c.className = "confetti";
+
+    c.style.left = cx + "px";
+    c.style.top = cy + "px";
+
+    const colors = ["#ff7bff","#ffd6ff","#b388ff","#ff9ad9","#c3a6ff","#7fd4ff"];
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 200 + Math.random() * 260;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance;
+    const rotation = Math.random() * 720 - 360;
+
+    document.body.appendChild(c);
+
+    setTimeout(() => {
+      c.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`;
+      c.style.opacity = "0";
+    }, 30);
+
+    setTimeout(() => c.remove(), 1400);
+  }
+}
+</script>
+</body>
+</html>

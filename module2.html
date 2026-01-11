@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cosmic Crystal Memory</title>
+
+<style>
+/* ---------------------------------------------------
+   GLOBAL
+--------------------------------------------------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #2b0057 0%, #4a0a7f 50%, #1a002f 100%);
+  color: #fff;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#moduleContainer {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+  padding-top: 40px;
+  text-align: center;
+}
+
+/* ---------------------------------------------------
+   STARFIELD
+--------------------------------------------------- */
+#stars {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+.star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 2.5s infinite ease-in-out;
+}
+@keyframes twinkle {
+  0%,100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+/* ---------------------------------------------------
+   UI
+--------------------------------------------------- */
+#statusMessage {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+}
+#attemptsText {
+  margin-bottom: 20px;
+  opacity: 0.85;
+}
+button {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 10px 18px;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.25s;
+}
+button:hover { background: rgba(255,255,255,0.25); }
+button:disabled { opacity: 0.4; }
+
+/* ---------------------------------------------------
+   CRYSTAL GRID
+--------------------------------------------------- */
+#crystalsRow {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 25px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.crystal {
+  width: 120px;
+  height: 170px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.crystal:hover { transform: scale(1.05); }
+.crystal.disabled { pointer-events: none; opacity: 0.5; }
+
+/* ---------------------------------------------------
+   OUTER AURA GLOW (NOT CLIPPED)
+--------------------------------------------------- */
+.crystal-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 80px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  border-radius: 40% 40% 30% 30%;
+  pointer-events: none;
+  box-shadow: none;
+  transition: box-shadow 0.25s ease-out;
+  z-index: 1;
+}
+.crystal-glow.active {
+  box-shadow:
+    0 0 95px 25px rgba(255,255,255,0.95),
+    0 0 150px 60px rgba(255,255,255,0.85);
+}
+
+/* ---------------------------------------------------
+   CRYSTAL CORE (INSIDE)
+--------------------------------------------------- */
+.crystal-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 120px;
+  border-radius: 40% 40% 30% 30%;
+  background: radial-gradient(circle at 30% 20%, #f7e6ff, #a66bff 40%, #3a0b6e 80%);
+  box-shadow:
+    0 0 75px rgba(200,150,255,1),
+    0 0 120px rgba(150,80,255,0.95);
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* Nebula */
+.crystal-nebula {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.6), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(160,120,255,0.7), transparent 60%);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+/* Sheen */
+.crystal-sheen {
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(120deg,
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.02) 40%,
+    rgba(255,255,255,0.3) 70%,
+    rgba(255,255,255,0.02) 100%);
+  transform: translateX(-60%);
+  mix-blend-mode: screen;
+}
+
+/* ---------------------------------------------------
+   RUNES
+--------------------------------------------------- */
+.rune {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  text-shadow: 0 0 14px rgba(255,255,255,1);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ---------------------------------------------------
+   TAP FEEDBACK
+--------------------------------------------------- */
+.correct-tap { animation: correctPulse 0.4s ease-out; }
+@keyframes correctPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.wrong-tap { animation: wrongShake 0.4s ease-out; }
+@keyframes wrongShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-6px); }
+  100% { transform: translateX(0); }
+}
+
+/* ---------------------------------------------------
+   MOBILE RESPONSIVE
+--------------------------------------------------- */
+@media (max-width: 600px) {
+  .crystal {
+    width: 95px;
+    height: 150px;
+  }
+  .crystal-core,
+  .crystal-glow {
+    width: 70px;
+    height: 105px;
+  }
+  .rune {
+    font-size: 1.7rem;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="stars"></div>
+
+<div id="moduleContainer">
+  <div id="statusMessage">Tap “Show Pattern” to begin.</div>
+  <div id="attemptsText">Attempts: 0 • Sequence length: 4</div>
+  <button id="replayPatternBtn">Show Pattern</button>
+  <div id="crystalsRow"></div>
+</div>
+
+<script>
+/* ---------------------------------------------------
+   STARFIELD
+--------------------------------------------------- */
+(function(){
+  const c=document.getElementById("stars");
+  for(let i=0;i<120;i++){
+    const s=document.createElement("div");
+    s.className="star";
+    s.style.left=Math.random()*100+"%";
+    s.style.top=Math.random()*100+"%";
+    s.style.animationDelay=Math.random()*3+"s";
+    c.appendChild(s);
+  }
+})();
+
+/* ---------------------------------------------------
+   GAME LOGIC
+--------------------------------------------------- */
+const pattern=[2,4,1,3];
+
+let crystals=[];
+let playerIndex=0;
+let attempts=0;
+let showing=false;
+let done=false;
+
+const statusEl=document.getElementById("statusMessage");
+const attemptsEl=document.getElementById("attemptsText");
+const replayBtn=document.getElementById("replayPatternBtn");
+const crystalsRow=document.getElementById("crystalsRow");
+
+function setStatus(t){ statusEl.innerHTML=t; }
+function updateAttempts(){
+  attemptsEl.textContent=`Attempts: ${attempts} • Sequence length: 4`;
+}
+
+/* ---------------------------------------------------
+   CRYSTAL CREATION
+--------------------------------------------------- */
+function createCrystal(i){
+  const c=document.createElement("div");
+  c.className="crystal";
+  c.dataset.index=i;
+
+  c.innerHTML=`
+    <div class="crystal-glow"></div>
+    <div class="crystal-core">
+      <div class="crystal-nebula"></div>
+      <div class="crystal-sheen"></div>
+    </div>
+    <div class="rune"><span>${["✧","Ψ","S","ϟ","✦"][i]}</span></div>
+  `;
+
+  c.onclick=()=>onCrystalClick(i);
+  crystalsRow.appendChild(c);
+  return c;
+}
+
+function buildCrystals(){
+  for(let i=0;i<5;i++){
+    crystals.push(createCrystal(i));
+  }
+}
+
+/* ---------------------------------------------------
+   WHITE GLOW
+--------------------------------------------------- */
+function glowCrystal(i,delay){
+  setTimeout(()=>{
+    const glow=crystals[i].querySelector(".crystal-glow");
+
+    glow.classList.remove("active");
+    void glow.offsetWidth;
+    glow.classList.add("active");
+
+    setTimeout(()=>glow.classList.remove("active"),600);
+  },delay);
+}
+
+/* ---------------------------------------------------
+   SHOW PATTERN
+--------------------------------------------------- */
+function showPattern(){
+  if(showing||done) return;
+  showing=true;
+  playerIndex=0;
+  disableCrystals(true);
+  setStatus("Watch the glowing crystals…");
+
+  const step=900;
+  for(let i=0;i<pattern.length;i++){
+    glowCrystal(pattern[i],i*step);
+  }
+
+  setTimeout(()=>{
+    showing=false;
+    disableCrystals(false);
+    setStatus("Your turn. Repeat the order.");
+  },pattern.length*step+300);
+}
+
+function disableCrystals(b){
+  crystals.forEach(c=>c.classList.toggle("disabled",b));
+}
+
+/* ---------------------------------------------------
+   PLAYER INPUT
+--------------------------------------------------- */
+function onCrystalClick(i){
+  if(showing||done) return;
+
+  const crystal=crystals[i];
+  const glow=crystal.querySelector(".crystal-glow");
+
+  crystal.classList.remove("wrong-tap","correct-tap");
+
+  if(pattern[playerIndex]===i){
+    crystal.classList.add("correct-tap");
+
+    glow.classList.remove("active");
+    void glow.offsetWidth;
+    glow.classList.add("active");
+
+    playerIndex++;
+
+    if(playerIndex===pattern.length){
+      attempts++;
+      updateAttempts();
+      success();
+    } else {
+      setStatus(`Good… ${playerIndex}/4`);
+    }
+
+  } else {
+    attempts++;
+    updateAttempts();
+    crystal.classList.add("wrong-tap");
+    setStatus("Wrong. Watch again.");
+    disableCrystals(true);
+    setTimeout(showPattern,700);
+  }
+}
+
+/* ---------------------------------------------------
+   SUCCESS
+--------------------------------------------------- */
+function success(){
+  done=true;
+  disableCrystals(true);
+  replayBtn.disabled=true;
+
+  setStatus("The crystals resonate…");
+
+  setTimeout(()=>{
+    window.location.href="module3.html";
+  },1500);
+}
+
+/* ---------------------------------------------------
+   INIT
+--------------------------------------------------- */
+replayBtn.onclick=showPattern;
+
+buildCrystals();
+updateAttempts();
+disableCrystals(true);
+</script>
+
+</body>
+</html>
