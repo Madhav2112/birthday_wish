@@ -140,34 +140,74 @@ html, body {
   80% { transform: translateX(8px); }
   100% { transform: translateX(0); }
 }
-
-/* Round 1 feedback text */
-#correctText, #wrongText {
-  position: fixed;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.4rem;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  z-index: 9999;
-}
-#correctText { text-shadow: 0 0 18px #7fff9f; }
-#wrongText   { text-shadow: 0 0 18px #ff7b7b; }
-
+/* Correct answer text */
 /* Round 2 text */
 #round2Text {
   position: fixed;
-  top: 35%;
+  top: 35%;              /* higher so it's clearly above feedback + boxes */
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.6rem;
+  font-size: 2.4rem;
+  color: #ffffff;
+  text-shadow: 0 0 20px #ffffff;
   opacity: 0;
   transition: opacity 0.6s ease;
-  text-shadow: 0 0 18px #9f7bff;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
   z-index: 9999;
+  overflow-wrap: break-word;
 }
 
+/* Correct answer text */
+#correctText {
+  position: fixed;
+  top: 25%;              /* middle area */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  color: #7dffb2;
+  text-shadow: 0 0 18px #3cff9a;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  z-index: 9999;
+  overflow-wrap: break-word;
+}
+
+/* Wrong answer text */
+#wrongText {
+  position: fixed;
+  top: 25%;              /* same vertical as correctText */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  color: #ff7b7b;
+  text-shadow: 0 0 18px #ff4f4f;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  z-index: 9999;
+  overflow-wrap: break-word;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  #round2Text {
+    top: 32%;
+    font-size: 2rem;
+  }
+
+  #correctText,
+  #wrongText {
+    top: 25%;
+    font-size: 1.6rem;
+  }
+}
 /* Sparkle container */
 #sparkleContainer {
   position: fixed;
@@ -213,7 +253,7 @@ html, body {
 /* Countdown */
 .countdown {
   position: fixed;
-  top: calc(15% - 15px);
+  top: 15%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 2.6rem;
@@ -225,22 +265,37 @@ html, body {
   z-index: 9999;
 }
 
+/* Mobile fix: move countdown higher so it never overlaps */
+@media (max-width: 600px) {
+  .countdown {
+    top: 35%;
+  }
+}
+
 /* Birthday text */
 .happy-birthday {
   position: fixed;
-  top: 40%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 3rem;
-  font-weight: 800;
+  width: 100%;
+  max-width: 100%;
+  text-align: center;
+  font-size: 2.2rem;
+  color: #ff7bff;
+  text-shadow:
+    0 0 18px #ff7bff,
+    0 0 28px #ff4fd8,
+    0 0 40px rgba(255,120,255,0.6);
   opacity: 0;
-  transition: opacity 0.8s ease;
-  text-shadow: 0 0 22px #ff7bff;
-  z-index: 9999;
+  transition: opacity 0.6s ease;
+  overflow-wrap: break-word;
 }
 
-.happy-birthday.visible { opacity: 1; }
-
+/* Visible state */
+.happy-birthday.visible {
+  opacity: 1;
+}
 /* Final message */
 .final-message {
   position: fixed;
@@ -652,12 +707,19 @@ async function handleBoxClick(n){
 
 /* ------------------ ROUND 1 ------------------ */
 async function handleRound1(n){
+
   const clicked = document.getElementById("box" + n);
   const lid = clicked.querySelector(".lid");
 
+  const r2 = document.getElementById("round2Text");
+  const correctText = document.getElementById("correctText");
+  const wrongText = document.getElementById("wrongText");
+
+  // Open lid
   lid.style.transform = "translateY(-90px)";
   await wait(600);
 
+  // ------------------ FEEDBACK (Correct / Wrong) ------------------
   if(n === correctBox){
 
     orbBall.style.opacity = "1";
@@ -665,9 +727,13 @@ async function handleRound1(n){
 
     clicked.classList.add("correct-glow");
 
-    const correctText = document.getElementById("correctText");
-    correctText.style.opacity = "1";
-    setTimeout(()=> correctText.style.opacity = "0", 1500);
+    // Hide Round 2 text if it was visible
+    gsap.to(r2, { opacity: 0, duration: 0.3 });
+
+    // Show correct text
+    gsap.to(correctText, { opacity: 1, duration: 0.6 });
+    await wait(1500);
+    gsap.to(correctText, { opacity: 0, duration: 0.6 });
 
     const rect = clicked.getBoundingClientRect();
     playSparkle(rect.left + rect.width/2, rect.top + rect.height/2);
@@ -679,23 +745,30 @@ async function handleRound1(n){
 
     clicked.classList.add("wrong-shake");
 
-    const wrongText = document.getElementById("wrongText");
-    wrongText.style.opacity = "1";
-    setTimeout(()=> wrongText.style.opacity = "0", 1500);
+    // Hide Round 2 text if it was visible
+    gsap.to(r2, { opacity: 0, duration: 0.3 });
+
+    // Show wrong text
+    gsap.to(wrongText, { opacity: 1, duration: 0.6 });
+    await wait(1500);
+    gsap.to(wrongText, { opacity: 0, duration: 0.6 });
 
     s_wrong.play();
     await wait(900);
   }
 
+  // ------------------ AFTER FEEDBACK: HIDE BOXES ------------------
   document.querySelector(".box-area").style.display = "none";
 
-  const r2 = document.getElementById("round2Text");
-  r2.style.opacity = "1";
+  // ------------------ SHOW ROUND 2 BEGINS ------------------
+  gsap.to(r2, { opacity: 1, duration: 0.6 });
   s_round2.play();
 
   await wait(2000);
-  r2.style.opacity = "0";
 
+  gsap.to(r2, { opacity: 0, duration: 0.6 });
+
+  // ------------------ PREPARE ROUND 2 ------------------
   currentRound = 2;
   finalTriggered = false;
 
