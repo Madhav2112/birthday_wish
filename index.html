@@ -522,7 +522,7 @@
   <!-- Identity screen -->
   <div class="identity-screen" id="identityScreen">
     <div class="identity-card">
-      <div class="identity-title">Module 1 – Cosmic Charades</div>
+      <div class="identity-title">Cosmic Charades</div>
       <div class="identity-line">Type your name to begin ✨</div>
       <div class="identity-subtitle">
         A tiny cosmic spirit wants to know who’s watching before it starts acting out secrets from the stars.
@@ -658,7 +658,7 @@ const charades = [
     id: "sleeping",
     question: "What mood is this?",
     hint: "It sinks slowly, twitches once, then drifts again.",
-    options: ["Thinking", "Pretending to sleep", "Resting"],
+    options: ["Thinking", "Sick", "Pretending to sleep"],
     correct: "Pretending to sleep",
     animation: animateSleeping
   },
@@ -666,7 +666,7 @@ const charades = [
     id: "bunny",
     question: "What creature is it acting like?",
     hint: "Tiny hops, tiny nose wiggles, tiny head tilt.",
-    options: ["Mouse", "Bunny", "Cat"],
+    options: ["Bunny", "Lion", "Cat"],
     correct: "Bunny",
     animation: animateBunny
   },
@@ -682,7 +682,7 @@ const charades = [
     id: "shy",
     question: "What is it doing now?",
     hint: "It hides, peeks, hides again… unsure but curious.",
-    options: ["Scared", "Shy", "Hiding"],
+    options: ["Scared", "Excited", "Shy"],
     correct: "Shy",
     animation: animateShy
   },
@@ -690,7 +690,7 @@ const charades = [
     id: "dizzy",
     question: "What state is it in?",
     hint: "It spins slowly, wobbles, then steadies itself.",
-    options: ["Balancing", "Dizzy", "Spinning"],
+    options: ["Dizzy", "Balancing", "Rotational motion"],
     correct: "Dizzy",
     animation: animateDizzy
   },
@@ -972,7 +972,7 @@ function showBonusRound() {
   opts.style.flexDirection = "column";
   opts.style.gap = "10px";
 
-  const bonusOptions = ["Jumping", "Dancing", "Pretending to sleep"];
+  const bonusOptions = ["Pretending to sleep", "Dancing", "Jumping"];
   const correctBonus = "Jumping";
 
   bonusOptions.forEach(text => {
