@@ -48,6 +48,7 @@ html, body {
   width: 140px;
   height: 120px;
   cursor: pointer;
+  touch-action: manipulation;
   position: absolute;
   bottom: 20px;
   transition: left 0.45s ease, bottom 0.45s ease;
@@ -246,16 +247,32 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 1.8rem;
+  
+  width: 85%;
+  max-width: 420px;        /* ⭐ perfect for laptop + mobile */
+  
+  font-size: 1rem;         /* ⭐ readable on mobile */
+  line-height: 1.5;
+  text-align: left;        /* ⭐ paragraphs look natural */
+  
+  color: #ffd6ff;
+  text-shadow: 0 0 10px #ff7bff;
+  
   opacity: 0;
   transition: opacity 0.8s ease;
-  text-align: center;
-  width: 80%;
-  line-height: 1.4;
   z-index: 9999;
+
+  white-space: normal;     /* ⭐ allows wrapping */
+  word-wrap: break-word;   /* ⭐ prevents overflow */
+  overflow-wrap: break-word;
+  padding: 10px 4px;       /* ⭐ breathing room */
 }
-
-
+@media (min-width: 600px) {
+  .final-message {
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+}
 .final-message.visible { opacity: 1; }
 
 /* Confetti */
@@ -267,6 +284,15 @@ html, body {
   opacity: 1;
   transition: transform 1.4s ease-out, opacity 1.4s ease-out;
   z-index: 99999;
+}
+#sparkleContainer,
+.countdown,
+.blow-text,
+.happy-birthday,
+.final-message,
+#cake,
+#cakeGlow {
+  pointer-events: none;
 }
 .happy-birthday {
   text-shadow:
@@ -350,7 +376,8 @@ const cakeGlow = document.getElementById("cakeGlow");
 
 const boxes = [box1, box2, box3];
 const slotX = [0, 190, 380];
-
+document.querySelectorAll('.blow-text, .happy-birthday, .final-message, #cake, #cakeGlow')
+  .forEach(el => el.style.pointerEvents = "none");
 let lastSwap = -1;
 let shuffleDone = false;
 let finalTriggered = false;
@@ -819,12 +846,21 @@ msg.innerHTML = "Happy Birthday, Jaisveen 🎉.<br><br>Just wanted to send a lit
 document.body.appendChild(msg);
 
 function showMessage(){
-  // Hide the Happy Birthday text
-  hb.classList.remove("visible");
-  hb.style.opacity = "0";
+  // Fade out Happy Birthday smoothly
+  gsap.to(hb, {
+    opacity: 0,
+    duration: 0.5,
+    onComplete: () => {
+      hb.classList.remove("visible");
+    }
+  });
 
-  // Show the final message
-  msg.classList.add("visible");
+  // Fade in the final message
+  gsap.to(msg, {
+    opacity: 1,
+    duration: 0.8,
+    delay: 0.2
+  });
 }
 /* ------------------ CONFETTI ------------------ */
 function spawnCenterConfetti(count){
