@@ -237,8 +237,8 @@ answerInput.addEventListener("keydown", e => {
 /* HINTS */
 const hints = [
   "Hint 1: It isn’t an object.",
-  "Hint 2: It exists once every year.",
-  "Final Hint: It’s you."
+  "Hint 2: It's a person.",
+  "Final Hint: It’s the person who's birthday it is today."
 ];
 let hintIndex = 0;
 
@@ -254,7 +254,7 @@ function checkAnswer() {
   const valid = ["you", "its you", "it's you", "me","jaisveen"];
 
   if (valid.includes(normalized)) {
-    feedback.textContent = "✨ Exactly. The universe is celebrating you.";
+    feedback.textContent = "✨ Exactly.";
 
     gsap.to("#successStar", {
       opacity: 1,
