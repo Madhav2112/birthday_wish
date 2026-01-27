@@ -251,7 +251,7 @@ function showHint() {
 function checkAnswer() {
   const raw = answerInput.value.trim().toLowerCase();
   const normalized = raw.replace(/[^a-z]/g, " ").replace(/\s+/g, " ").trim();
-  const valid = ["you", "its you", "it's you", "me","jaisveen"];
+  const valid = ["you", "its you", "it's you", "me","jaisveen","The birthday girl","Birthday girl"];
 
   if (valid.includes(normalized)) {
     feedback.textContent = "✨ Exactly.";
